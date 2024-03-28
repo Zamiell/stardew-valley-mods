@@ -1,7 +1,7 @@
 {
   "Name": "VisibleArtifactSpots",
   "Author": "Zamiel",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "Description": "Increases the visibility of artifact spots",
   "UniqueID": "Zamiel.VisibleArtifactSpots",
   "EntryDll": "VisibleArtifactSpots.dll",
