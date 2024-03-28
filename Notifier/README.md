@@ -10,8 +10,6 @@ A mod for [Stardew Valley](https://www.stardewvalley.net/) that automatically no
 - [Bubbles](https://stardewvalleywiki.com/Fishing#Bubbles) appear or disappear.
 - A buff from food or drink wears off. (This also automatically pauses the game.)
 - The player's health drops below 48. (This also automatically pauses the game.)
-- A non-pre-existing ladder spawns in the mines / Skull Cavern.
-- A non-pre-existing shaft spawns in the mines / Skull Cavern.
 
 Additionally, the mod will automatically pause the game when:
 
