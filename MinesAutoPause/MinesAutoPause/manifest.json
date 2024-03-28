@@ -1,0 +1,10 @@
+{
+  "Name": "MinesAutoPause",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Automatically puases in the mines & Skull Cavern",
+  "UniqueID": "Zamiel.MinesAutoPause",
+  "EntryDll": "MinesAutoPause.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": ["GitHub:Zamiell/MinesAutoPause"]
+}

@@ -1,0 +1,10 @@
+{
+  "Name": "OrganizeInventory",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Adds a hotkey to automatically organize your inventory",
+  "UniqueID": "Zamiel.OrganizeInventory",
+  "EntryDll": "OrganizeInventory.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [ "GitHub:Zamiell/OrganizeInventory" ]
+}
