@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -11,8 +10,7 @@ namespace EatDrinkFromInventory
     {
         // Variables
         bool isEating = false;
-        int facingDirectionBeforeEating = Game1.player.FacingDirection;
-
+        int facingDirectionBeforeEating = 0;
 
         public sealed class ModConfig
         {

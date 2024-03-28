@@ -37,7 +37,6 @@ namespace Notifier
         private int lastNumBombs = 0;
         private int lastNumProjectiles = 0;
 
-
         public override void Entry(IModHelper helper)
         {
             helper.Events.Player.Warped += this.OnWarped;
@@ -47,6 +46,7 @@ namespace Notifier
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
             CheckForArtifactSpots();
+            CheckDungeonPause();
             CheckLadderShaftCoal();
         }
 
@@ -61,6 +61,21 @@ namespace Notifier
             }
         }
 
+        private void CheckDungeonPause()
+        {
+            if (Game1.currentLocation is not MineShaft mineShaft)
+            {
+                return;
+            }
+
+            if (!IsDungeonBattleFloor(mineShaft))
+            {
+                return;
+            }
+
+            EmulatePause();
+        }
+
         private void CheckLadderShaftCoal()
         {
             if (Game1.currentLocation is not MineShaft mineShaft)
@@ -68,9 +83,9 @@ namespace Notifier
                 return;
             }
 
-            if (IsDungeonBattleFloor(mineShaft))
+            if (!IsDungeonBattleFloor(mineShaft))
             {
-                EmulatePause();
+                return;
             }
 
             var potentialTuple = GetDungeonFloorNum(mineShaft.Name);
@@ -225,7 +240,7 @@ namespace Notifier
 
             var oldBubblesY = currentBubblesY;
             var newBubblesY = Game1.currentLocation.fishSplashPoint.Y;
-            currentBubblesY = newBubblesX;
+            currentBubblesY = newBubblesY;
 
             if (oldBubblesX == newBubblesX && oldBubblesY == newBubblesY)
             {
