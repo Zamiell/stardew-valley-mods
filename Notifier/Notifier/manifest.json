@@ -1,0 +1,10 @@
+{
+  "Name": "Notifier",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Automatically notifies you when certain in-game events occur",
+  "UniqueID": "Zamiel.Notifier",
+  "EntryDll": "Notifier.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [ "GitHub:Zamiell/stardew-valley-mods" ]
+}

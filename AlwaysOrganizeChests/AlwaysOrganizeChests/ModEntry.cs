@@ -1,13 +1,6 @@
-﻿using System;
-using System.Security.AccessControl;
-using Force.DeepCloner;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 namespace AlwaysOrganizeChests
 {
