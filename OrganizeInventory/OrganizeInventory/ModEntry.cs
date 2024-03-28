@@ -82,7 +82,6 @@ namespace OrganizeInventory
             foreach (var (name, slots) in ITEMS_TO_SLOTS)
             {
                 var existingSlots = GetSlotsOfItem(name);
-                Log("Sorting \"" + name + "\", slots: " + string.Join(",", slots) + ", existingSlots: " + string.Join(",", existingSlots));
 
                 if (existingSlots.Count == 0)
                 {
@@ -129,19 +128,14 @@ namespace OrganizeInventory
 
         private void SwapItem(int slot1, int slot2)
         {
-            Log("Swapping slot " + slot1 + " and slot " + slot2 + ".");
             var item1 = Game1.player.Items[slot1];
             var item2 = Game1.player.Items[slot2];
+
             string item1Name = item1?.Name ?? "n/a";
             string item2Name = item2?.Name ?? "n/a";
-            Log("Swapped \"" + item1Name + "\" + \"" + item2Name + "\".");
+
             Game1.player.Items[slot1] = item2;
             Game1.player.Items[slot2] = item1;
-        }
-
-        private void Notify(string msg)
-        {
-            Game1.chatBox.addMessage(msg, Color.Red);
         }
 
         private void Log(string msg)
