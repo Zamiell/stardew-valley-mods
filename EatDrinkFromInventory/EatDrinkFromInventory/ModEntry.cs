@@ -111,7 +111,7 @@ namespace EatDrinkFromInventory
 
             facingDirectionBeforeEating = Game1.player.FacingDirection;
 
-            obj.Stack--;
+            Game1.player.Items.ReduceId(obj.ItemId, 1);
             Game1.player.eatObject(obj);
             Game1.activeClickableMenu = null;
         }
