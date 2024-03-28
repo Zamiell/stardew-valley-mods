@@ -1,0 +1,12 @@
+{
+  "Name": "Elevator Bell Remover",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Removes the sound effect of the elevator bell",
+  "UniqueID": "Zamiel.ElevatorBellRemover",
+  "MinimumApiVersion": "3.0.0",
+  "UpdateKeys": ["GitHub:Zamiell/stardew-valley-mods"],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  }
+}
