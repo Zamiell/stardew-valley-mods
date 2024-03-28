@@ -1,6 +1,5 @@
 ﻿using Force.DeepCloner;
 using Microsoft.Xna.Framework;
-using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -85,19 +84,19 @@ namespace Notifier
             var ladderPos = GetTilePosition(mineShaft, TileType.Ladder);
             if (ladderPos != Vector2.Zero)
             {
-                Notify("Floor " + floorNum + " has an pre-existing ladder!", "cowboy_gunload");
+                Notify($"Floor {floorNum} has an pre-existing ladder at: {ladderPos.X}, {ladderPos.Y}", "cowboy_gunload");
             }
 
             var shaftPos = GetTilePosition(mineShaft, TileType.Shaft);
             if (shaftPos != Vector2.Zero)
             {
-                Notify("Floor " + floorNum + " has an pre-existing shaft!", "cowboy_gunload");
+                Notify($"Floor {floorNum} has an pre-existing shaft at: {shaftPos.X}, {shaftPos.Y}", "cowboy_gunload");
             }
 
             var mineCartPos = GetTilePosition(mineShaft, TileType.MineCartCoal);
             if (mineCartPos != Vector2.Zero)
             {
-                Notify("Floor " + floorNum + " has an mine cart with coal!", "cowboy_gunload");
+                Notify($"Floor {floorNum} has an mine cart with coal at: {mineCartPos.X}, {mineCartPos.Y}", "cowboy_gunload");
             }
         }
 
@@ -234,7 +233,7 @@ namespace Notifier
             }
 
             bool disappear = newBubblesX == 0 && newBubblesY == 0;
-            string msg = disappear ? "Bubbles disappeared." : $"Bubbles appeared: {newBubblesX}, {newBubblesY}";
+            string msg = disappear ? $"Bubbles disappeared in {Game1.currentLocation.Name}." : $"Bubbles appeared in {Game1.currentLocation.Name}: {newBubblesX}, {newBubblesY}";
             string soundName = disappear ? "cowboy_gunload" : "Cowboy_Secret";
             Notify(msg, soundName);
         }
@@ -408,9 +407,6 @@ namespace Notifier
 
         private bool IsDayEnding()
         {
-            Log("Debug: timeOfDay: " + Game1.timeOfDay);
-            Log("Debug: gameTimeInterval: " + Game1.gameTimeInterval);
-
             return Game1.timeOfDay == 600 && Game1.gameTimeInterval == 0;
         }
 
