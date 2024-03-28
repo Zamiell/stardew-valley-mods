@@ -1,22 +1,51 @@
-﻿using System;
-using System.Security.AccessControl;
-using Force.DeepCloner;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 namespace SwapRings
 {
     public class ModEntry : Mod
     {
+        public sealed class ModConfig
+        {
+            public KeybindList Hotkey { get; set; } = KeybindList.Parse("Z");
+        }
+
+        private ModConfig config = new();
+
         public override void Entry(IModHelper helper)
         {
+            config = helper.ReadConfig<ModConfig>();
+
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
+
+        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        {
+            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null)
+            {
+                return;
+            }
+
+            configMenu.Register(
+                mod: this.ModManifest,
+                reset: () => config = new ModConfig(),
+                save: () => this.Helper.WriteConfig(config)
+            );
+
+            configMenu.AddKeybindList(
+                this.ModManifest,
+                () => config.Hotkey,
+                (KeybindList val) => config.Hotkey = val,
+                () => "Hotkey",
+                () => "The hotkey to swap the rings."
+            );
+        }
+
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady)
@@ -24,7 +53,8 @@ namespace SwapRings
                 return;
             }
 
-            if (e.Button.ToString() == "Z") {
+            if (config.Hotkey.IsDown())
+            {
                 SwapRings();
             }
         }
