@@ -3,7 +3,7 @@
 A mod for [Stardew Valley](https://www.stardewvalley.net/) that automatically notifies you when:
 
 - The [Watering Can](https://stardewvalleywiki.com/Watering_Cans) runs out of water.
-- A new location has an [artifact spot](https://stardewvalleywiki.com/Artifact_Spot).
+- A new location has an [artifact spot](https://stardewvalleywiki.com/Artifact_Spot) or a [seed spot](https://stardewvalleywiki.com/Seed_Spot).
 - A ladder spawns in the mines / Skull Cavern.
 - A shaft spawns in the mines / Skull Cavern.
 - A minecart with coal spawns in the mines / Skull Cavern.

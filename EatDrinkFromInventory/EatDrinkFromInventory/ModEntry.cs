@@ -12,11 +12,6 @@ namespace EatDrinkFromInventory
         bool isEating = false;
         int facingDirectionBeforeEating = 0;
 
-        public sealed class ModConfig
-        {
-            public KeybindList Hotkey { get; set; } = KeybindList.Parse("Q");
-        }
-
         private ModConfig config = new();
 
         public override void Entry(IModHelper helper)

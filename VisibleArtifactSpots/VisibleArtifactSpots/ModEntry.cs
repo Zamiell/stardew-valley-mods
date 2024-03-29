@@ -17,7 +17,7 @@ namespace VisibleArtifactSpots
         {
             foreach (var obj in Game1.currentLocation.objects.Values)
             {
-                if (obj.Name == "Artifact Spot")
+                if (obj.Name == "Artifact Spot" || obj.Name == "Seed Spot")
                 {
                     var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
                     var rect = Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29);

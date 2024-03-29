@@ -8,11 +8,6 @@ namespace SwapRings
 {
     public class ModEntry : Mod
     {
-        public sealed class ModConfig
-        {
-            public KeybindList Hotkey { get; set; } = KeybindList.Parse("Z");
-        }
-
         private ModConfig config = new();
 
         public override void Entry(IModHelper helper)
@@ -70,6 +65,8 @@ namespace SwapRings
 
             var firstRingIndex = ringIndexes[0];
             SwapRing(true, firstRingIndex);
+
+            // We could also use "crit", which is the sound effect for equipping a ring.
             Game1.playSound("toolSwap");
 
             if (ringIndexes.Count < 2)

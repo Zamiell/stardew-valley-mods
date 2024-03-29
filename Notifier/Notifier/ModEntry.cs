@@ -21,13 +21,14 @@ namespace Notifier
         {
             Ladder = 173,
             Shaft = 174,
-            MineCartCoal = 194,
+            CoalSackOrMineCart = 194,
         }
 
         // Variables
         private int currentWateringCanWater = 0;
         public int currentBubblesX = 0;
         public int currentBubblesY = 0;
+        public GameLocation currentBubblesLocation = Game1.currentLocation;
         private Netcode.NetStringList currentBuffIDs = new Netcode.NetStringList();
         private int currentHealth = 100; // Default starting health on a new character.
         private GameLocation lastLocation = Game1.currentLocation;
@@ -47,7 +48,7 @@ namespace Notifier
         {
             CheckForArtifactSpots();
             CheckDungeonPause();
-            CheckLadderShaftCoal();
+            CheckCoalNode();
         }
 
         private void CheckForArtifactSpots()
@@ -57,6 +58,11 @@ namespace Notifier
                 if (node.Name == "Artifact Spot")
                 {
                     Notify($"Artifact spot detected in {Game1.currentLocation.Name} at: {node.TileLocation.X}, {node.TileLocation.Y}", "");
+                }
+
+                if (node.Name == "Seed Spot")
+                {
+                    Notify($"Seed spot detected in {Game1.currentLocation.Name} at: {node.TileLocation.X}, {node.TileLocation.Y}", "");
                 }
             }
         }
@@ -76,7 +82,7 @@ namespace Notifier
             EmulatePause();
         }
 
-        private void CheckLadderShaftCoal()
+        private void CheckCoalNode()
         {
             if (Game1.currentLocation is not MineShaft mineShaft)
             {
@@ -108,10 +114,10 @@ namespace Notifier
                 Notify($"Floor {floorNum} has an pre-existing shaft at: {shaftPos.X}, {shaftPos.Y}", "cowboy_gunload");
             }
 
-            var mineCartPos = GetTilePosition(mineShaft, TileType.MineCartCoal);
-            if (mineCartPos != Vector2.Zero)
+            var coalPos = GetTilePosition(mineShaft, TileType.CoalSackOrMineCart);
+            if (coalPos != Vector2.Zero)
             {
-                Notify($"Floor {floorNum} has an mine cart with coal at: {mineCartPos.X}, {mineCartPos.Y}", "cowboy_gunload");
+                Notify($"Floor {floorNum} has a coal node: {coalPos.X}, {coalPos.Y}", "cowboy_gunload");
             }
         }
 
@@ -241,6 +247,15 @@ namespace Notifier
             var oldBubblesY = currentBubblesY;
             var newBubblesY = Game1.currentLocation.fishSplashPoint.Y;
             currentBubblesY = newBubblesY;
+
+            var oldBubblesLocation = currentBubblesLocation;
+            var newBubblesLocation = Game1.currentLocation;
+            currentBubblesLocation = newBubblesLocation;
+
+            if (oldBubblesLocation != newBubblesLocation)
+            {
+                return;
+            }
 
             if (oldBubblesX == newBubblesX && oldBubblesY == newBubblesY)
             {
