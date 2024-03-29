@@ -21,9 +21,10 @@ namespace VisibleArtifactSpots
                 {
                     var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
                     var rect = Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29);
+                    var fadedWhite = new Color(255, 255, 255, 127);
 
                     // This draw invocation is copied from the tool hit rectangle in "Farmer.cs".
-                    e.SpriteBatch.Draw(Game1.mouseCursors, pos, rect, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, pos.Y / 10000f);
+                    e.SpriteBatch.Draw(Game1.mouseCursors, pos, rect, fadedWhite, 0f, Vector2.Zero, 1f, SpriteEffects.None, pos.Y / 10000f);
                 }
             }
         }
