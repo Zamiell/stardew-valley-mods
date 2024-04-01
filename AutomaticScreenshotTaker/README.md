@@ -1,11 +1,7 @@
-# Swap Rings
+# Automatic Screenshot Taker
 
-A mod for [Stardew Valley](https://www.stardewvalley.net/) that swap rings upon pressing a hotkey.
+A mod for [Stardew Valley](https://www.stardewvalley.net/) that automatically takes a screenshot upon reaching a new floor in the mines or Skull Cavern. This is so that you can immediately see what the layout of the floor is.
 
-- This mod swaps the first two rings in your inventory with the two rings that are currently equipped.
-- If only one ring is in your inventory, then it will only swap out the first ring.
-- If no rings are in your inventory, the hotkey will do nothing.
+This mod is [available to download at NexusMods](https://www.nexusmods.com/stardewvalley/mods/10460).
 
-By default, the hotkey is bound to Z, but this can be changed through the [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098) (or by editing the "config.json" file).
-
-This mod is [available to download at NexusMods](https://www.nexusmods.com/stardewvalley/mods/21205).
+You can use this mod in conjunction with an [automatic image viewer](https://github.com/Zamiell/image-viewer). By putting the image viewer on your second monitor, you can automatically view the entire floor as soon as you enter it without having to do anything extra.
