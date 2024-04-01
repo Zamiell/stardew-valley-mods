@@ -1,0 +1,10 @@
+{
+  "Name": "Plant Hotkey",
+  "Author": "Zamiel",
+  "Version": "1.0.1",
+  "Description": "Allows for a planting hotkey",
+  "UniqueID": "Zamiel.PlantHotkey",
+  "EntryDll": "PlantHotkey.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": ["GitHub:Zamiell/stardew-valley-mods"]
+}

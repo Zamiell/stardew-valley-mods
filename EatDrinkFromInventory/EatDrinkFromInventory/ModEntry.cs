@@ -1,7 +1,9 @@
-﻿using StardewModdingAPI;
+﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Menus;
 
 namespace EatDrinkFromInventory
@@ -73,11 +75,11 @@ namespace EatDrinkFromInventory
 
             if (config.Hotkey.IsDown())
             {
-                ConsumerItemThatCursorIsOver();
+                ConsumeItemThatCursorIsOver();
             }
         }
 
-        private void ConsumerItemThatCursorIsOver()
+        private void ConsumeItemThatCursorIsOver()
         {
             if (Game1.activeClickableMenu is not GameMenu gameMenu) {
                 return;
@@ -99,11 +101,65 @@ namespace EatDrinkFromInventory
                 return;
             }
 
-            if (obj.Edibility <= 0)
+            if (obj.Edibility > 0)
             {
-                return;
+                EatObject(obj);
             }
+            else if (obj.Name == "Staircase" && obj.Stack > 1 && Game1.currentLocation is MineShaft mineShaft)
+            {
+                // From: MineShaft.cs
+                obj.Stack--; // "Items.ReduceId" does not work for some reason.
+                Game1.enterMine(mineShaft.mineLevel + 1);
+                Game1.playSound("stairsdown");
+                Game1.activeClickableMenu = null;
+            }
+            else if (obj.Name.StartsWith("Warp Totem: Farm"))
+            {
+                Game1.player.Items.ReduceId(obj.ItemId, 1);
 
+                // From: Object::totemWarpForReal
+                if (!Game1.getFarm().TryGetMapPropertyAs("WarpTotemEntry", out Point warp_location, false))
+                {
+                    switch (Game1.whichFarm)
+                    {
+                        case 6:
+                            warp_location = new Point(82, 29);
+                            break;
+                        case 5:
+                            warp_location = new Point(48, 39);
+                            break;
+                        default:
+                            warp_location = new Point(48, 7);
+                            break;
+                    }
+                }
+                Game1.warpFarmer("Farm", warp_location.X, warp_location.Y, false);
+            }
+            else if (obj.Name.StartsWith("Warp Totem: Mountain"))
+            {
+                Game1.player.Items.ReduceId(obj.ItemId, 1);
+
+                // From: Object::totemWarpForReal
+                Game1.warpFarmer("Mountain", 31, 20, false);
+            }
+            else if (obj.Name.StartsWith("Warp Totem: Beach"))
+            {
+                Game1.player.Items.ReduceId(obj.ItemId, 1);
+
+                // From: Object::totemWarpForReal
+                Game1.warpFarmer("Beach", 20, 4, false);
+            }
+            else if (obj.Name.StartsWith("Warp Totem: Desert"))
+            {
+                Game1.player.Items.ReduceId(obj.ItemId, 1);
+
+                // From: Object::totemWarpForReal
+                Game1.warpFarmer("Desert", 35, 43, false);
+            }
+        }
+
+        private void EatObject(StardewValley.Object obj)
+        {
             facingDirectionBeforeEating = Game1.player.FacingDirection;
 
             Game1.player.Items.ReduceId(obj.ItemId, 1);
@@ -113,7 +169,10 @@ namespace EatDrinkFromInventory
 
         private void EmulatePause()
         {
-            Game1.activeClickableMenu = new GameMenu();
+            if (Game1.activeClickableMenu is null)
+            {
+                Game1.activeClickableMenu = new GameMenu();
+            }
         }
 
         private void Log(string msg)

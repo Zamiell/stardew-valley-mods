@@ -1,6 +1,6 @@
 # Visible Artifact Spots
 
-A mod for [Stardew Valley](https://www.stardewvalley.net/) that draws a red border around [artifact spots](https://stardewvalleywiki.com/Artifact_Spot), making them easier to see.
+A mod for [Stardew Valley](https://www.stardewvalley.net/) that draws a red border and a notification bubble around [artifact spots](https://stardewvalleywiki.com/Artifact_Spot) and [seed spots](https://stardewvalleywiki.com/Seed_Spot), making them easier to see.
 
 This mod is [available to download at NexusMods](https://www.nexusmods.com/stardewvalley/mods/21223).
 
@@ -10,4 +10,4 @@ This mod is not considered cheating because in the vanilla game, you can pause t
 
 ## Comparison to Other Mods
 
-There are other mods that change the sprites of artifact spots to make them easier to see. However, doing this replaces the spritesheet as a content modification. Since this mod draws a new border around the existing sprite, no content modifications are necessary, making this mod more resilient to base game updates.
+There are other mods that change the sprites of artifact spots to make them easier to see. However, doing this replaces the spritesheet as a content modification. Since this mod draws on top of the existing sprite, no content modifications are necessary, making this mod more resilient to base game updates.

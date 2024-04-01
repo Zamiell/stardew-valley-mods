@@ -5,6 +5,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Tools;
 using System.Text.RegularExpressions;
 
 namespace Notifier
@@ -121,10 +122,10 @@ namespace Notifier
             }
         }
 
-        public bool IsDungeonBattleFloor(MineShaft mineShaft)
+        public bool IsDungeonBattleFloor(GameLocation location)
         {
             // e.g. "UndergroundMine1" is the first floor of the mines.
-            return mineShaft.Name.StartsWith("UndergroundMine") && !IsMineEmptyFloor(mineShaft);
+            return location is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine") && !IsMineEmptyFloor(mineShaft);
         }
 
         private bool IsMineEmptyFloor(MineShaft mineShaft)
@@ -424,15 +425,14 @@ namespace Notifier
 
         private void EmulatePause()
         {
-            if (IsDayEnding())
-            {
-                return;
-            }
-
-            if (Game1.activeClickableMenu is null)
+            if (Game1.activeClickableMenu is null && !IsFishing() && !IsDayEnding())
             {
                 Game1.activeClickableMenu = new GameMenu();
             }
+        }
+
+        private bool IsFishing() {
+            return Game1.player.UsingTool && Game1.player.CurrentTool is FishingRod;
         }
 
         private bool IsDayEnding()

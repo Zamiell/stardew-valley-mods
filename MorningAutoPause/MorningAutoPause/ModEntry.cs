@@ -19,7 +19,10 @@ namespace MorningAutoPause
 
         private void EmulatePause()
         {
-            Game1.activeClickableMenu = new GameMenu();
+            if (Game1.activeClickableMenu is null)
+            {
+                Game1.activeClickableMenu = new GameMenu();
+            }
         }
     }
 }
