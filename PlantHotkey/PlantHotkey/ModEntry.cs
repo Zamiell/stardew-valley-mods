@@ -3,7 +3,13 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Characters;
+using StardewValley.Extensions;
+using StardewValley.GameData.Crops;
+using StardewValley.Locations;
+using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
+using StardewValley.Tools;
 using xTile.Dimensions;
 
 namespace PlantHotkey
@@ -37,7 +43,7 @@ namespace PlantHotkey
                 this.ModManifest,
                 () => config.Hotkey,
                 (KeybindList val) => config.Hotkey = val,
-                () => "Hotkey",
+                () => "Plant Hotkey",
                 () => "The hotkey to plant seeds + fertilizer."
             );
         }
@@ -69,59 +75,94 @@ namespace PlantHotkey
 
             foreach (Vector2 tile in tiles)
             {
+                // Auto plant seeds + auto plant fertilizer + auto harvest
                 if (location.terrainFeatures.TryGetValue(tile, out var feature) && feature is HoeDirt dirt)
                 {
                     if (IsSeed(slot1Item) && dirt.crop is null)
                     {
                         dirt.plant(slot1Item.ItemId, Game1.player, false);
+                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
                     }
 
-                    if (IsFertilizer(slot2Item) && dirt.fertilizer is null)
+                    if (IsFertilizer(slot2Item) && dirt.fertilizer.Value is null)
                     {
                         dirt.plant(slot2Item.ItemId, Game1.player, true);
+                        Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
                     }
 
-                    if (dirt.crop is not null)
+                    if (dirt.readyForHarvest() && dirt.crop is not null && dirt.crop.GetHarvestMethod() == HarvestMethod.Grab)
                     {
-                        // TODO: auto harvest
-                        // dirt.performUseAction(dirt.Tile);
+                        dirt.performUseAction(dirt.crop.tilePosition);
                     }
+                }
+
+                StardewValley.Object obj = location.getObjectAtTile((int)tile.X, (int)tile.Y);
+
+                // Auto empty nearby objects
+                if (obj is not null && obj.readyForHarvest.Value)
+                {
+                    obj.checkForAction(Game1.player);
+                }
+
+                // Auto fill Kegs
+                if (obj is not null && obj.Name == "Keg" && IsFruit(slot1Item))
+                {
+                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                }
+
+                // Auto fill Furnaces
+                if (obj is not null && obj.Name == "Furnace" && IsOre(slot1Item))
+                {
+                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                }
+
+                // Auto-fill Crab Pots
+                if (obj is not null && obj.Name == "Crab Pot" && IsBait(slot1Item))
+                {
+                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
                 }
             }
         }
 
         private bool IsSeed(Item? item)
         {
-            if (item is null)
-            {
-                return false;
-            }
-
-            return (
-                item.Name == "Starfruit Seeds"
-                || item.Name == "Pumpkin Seeds"
-                || item.Name == "Ancient Seeds"
-                || item.Name == "Mixed Seeds"
-                || item.Name == "Fiber Seeds"
-            );
+            return item is not null && item.Category == StardewValley.Object.SeedsCategory;
         }
 
         private bool IsFertilizer(Item? item)
         {
-            if (item is null)
+            return item is not null && item.Category == StardewValley.Object.fertilizerCategory;
+        }
+
+        private bool IsFruit(Item? item)
+        {
+            return item is not null && item.Category == StardewValley.Object.FruitsCategory;
+        }
+
+        private bool IsOre(Item? item)
+        {
+            if (item == null)
             {
                 return false;
             }
 
             return (
-                item.Name == "Basic Fertilizer"
-                || item.Name == "Quality Fertilizer"
-                || item.Name == "Deluxe Fertilizer"
-                || item.Name == "Speed-Gro"
-                || item.Name == "Deluxe Speed-Gro"
-                || item.Name == "Hyper Speed-Gro"
+                item.Name == "Copper Ore"
+                || item.Name == "Iron Ore"
+                || item.Name == "Gold Ore"
+                || item.Name == "Iridium Ore"
             );
         }
+
+        private bool IsBait(Item? item)
+        {
+            // We intentionally do not use the category of bait to prevent accidentally using non-standard bait.
+            return item is not null && item.Name == "Bait";
+        }
+
 
         private void Log(string msg)
         {

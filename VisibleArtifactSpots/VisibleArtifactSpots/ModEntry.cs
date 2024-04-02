@@ -15,7 +15,7 @@ namespace VisibleArtifactSpots
 
         private void OnRenderedWorld(object? sender, RenderedWorldEventArgs e)
         {
-            foreach (var obj in Game1.currentLocation.objects.Values)
+            foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
                 if (obj.Name == "Artifact Spot" || obj.Name == "Seed Spot")
                 {

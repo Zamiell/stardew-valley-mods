@@ -1,11 +1,14 @@
 ﻿using Force.DeepCloner;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Projectiles;
+using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using System.Text.RegularExpressions;
 
@@ -55,16 +58,15 @@ namespace Notifier
 
         private void CheckForArtifactSpots()
         {
-            foreach (StardewValley.Object node in Game1.currentLocation.objects.Values)
+            foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
-                if (node.Name == "Artifact Spot")
+                if (obj.Name == "Artifact Spot")
                 {
-                    Notify($"Artifact spot detected in {Game1.currentLocation.Name} at: {node.TileLocation.X}, {node.TileLocation.Y}", "");
+                    Notify($"Artifact spot detected in {Game1.currentLocation.Name} at: {obj.TileLocation.X}, {obj.TileLocation.Y}", "");
                 }
-
-                if (node.Name == "Seed Spot")
+                else if (obj.Name == "Seed Spot")
                 {
-                    Notify($"Seed spot detected in {Game1.currentLocation.Name} at: {node.TileLocation.X}, {node.TileLocation.Y}", "");
+                    Notify($"Seed spot detected in {Game1.currentLocation.Name} at: {obj.TileLocation.X}, {obj.TileLocation.Y}", "");
                 }
             }
         }

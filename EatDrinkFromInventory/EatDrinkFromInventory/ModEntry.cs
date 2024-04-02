@@ -44,7 +44,7 @@ namespace EatDrinkFromInventory
                 this.ModManifest,
                 () => config.Hotkey,
                 (KeybindList val) => config.Hotkey = val,
-                () => "Hotkey",
+                () => "Consume Hotkey",
                 () => "The hotkey to consume the food/drink that the cursor is over."
             );
         }
