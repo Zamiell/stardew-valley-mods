@@ -5,6 +5,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Projectiles;
 using StardewValley.Tools;
 using System.Text.RegularExpressions;
 
@@ -389,10 +390,12 @@ namespace Notifier
             return numBombs;
         }
 
-        // We just check for any ammo being removed (assuming that all ammo is exploding ammo).
+        // We just check for any player ammo being removed (assuming that all ammo is exploding ammo).
         private void CheckExplodingAmmoExploded(GameLocation location, bool isNewLocation)
         {
-            int numProjectiles = location.projectiles.Count;
+            var playerProjectiles = location.projectiles.Where(projectile => projectile.damagesMonsters.Value).ToArray();
+
+            int numProjectiles = playerProjectiles.Length;
             int oldNumProjectiles = lastNumProjectiles;
             int newNumProjectiles = numProjectiles;
             lastNumProjectiles = numProjectiles;

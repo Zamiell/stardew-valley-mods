@@ -11,6 +11,7 @@ namespace EatDrinkFromInventory
     public class ModEntry : Mod
     {
         // Variables
+        bool usedHotkeyToEat = false;
         bool isEating = false;
         int facingDirectionBeforeEating = 0;
 
@@ -62,7 +63,12 @@ namespace EatDrinkFromInventory
             if (oldIsEating && !newIsEating)
             {
                 Game1.player.FacingDirection = facingDirectionBeforeEating;
-                EmulatePause();
+
+                if (usedHotkeyToEat)
+                {
+                    usedHotkeyToEat = false;
+                    EmulatePause();
+                }
             }
         }
 
@@ -156,10 +162,18 @@ namespace EatDrinkFromInventory
                 // From: Object::totemWarpForReal
                 Game1.warpFarmer("Desert", 35, 43, false);
             }
+            else if (obj.Name.StartsWith("Warp Totem: Island"))
+            {
+                Game1.player.Items.ReduceId(obj.ItemId, 1);
+
+                // From: Object::totemWarpForReal
+                Game1.warpFarmer("IslandSouth", 11, 11, false);
+            }
         }
 
         private void EatObject(StardewValley.Object obj)
         {
+            usedHotkeyToEat = true;
             facingDirectionBeforeEating = Game1.player.FacingDirection;
 
             Game1.player.Items.ReduceId(obj.ItemId, 1);
