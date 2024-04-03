@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.BellsAndWhistles;
 using StardewValley.GameData.Crops;
 using StardewValley.TerrainFeatures;
 
@@ -70,35 +72,52 @@ namespace PlantHotkey
             // We return from each successful action to avoid race condition where we can plant more seeds than we have in our inventory.
             foreach (Vector2 tile in tiles)
             {
-                // Auto plant seeds + auto plant fertilizer + auto harvest
-                if (location.terrainFeatures.TryGetValue(tile, out var feature) && feature is HoeDirt dirt)
+                if (location.terrainFeatures.TryGetValue(tile, out var terrainFeature))
                 {
-                    if (IsSeed(slot1Item) && dirt.crop is null)
+                    // Auto plant seeds + auto plant fertilizer + auto harvest
+                    if (terrainFeature is HoeDirt hoeDirt)
                     {
-                        bool success = dirt.plant(slot1Item.ItemId, Game1.player, false);
-                        if (success)
+                        if (IsSeed(slot1Item) && hoeDirt.crop is null)
                         {
-                            Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
-                            return;
+                            bool success = hoeDirt.plant(slot1Item.ItemId, Game1.player, false);
+                            if (success)
+                            {
+                                Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                                return;
+                            }
+                        }
+
+                        if (IsFertilizer(slot2Item) && hoeDirt.fertilizer.Value is null)
+                        {
+                            bool success = hoeDirt.plant(slot2Item.ItemId, Game1.player, true);
+                            if (success)
+                            {
+                                Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
+                                return;
+                            }
+                        }
+
+                        if (hoeDirt.readyForHarvest() && hoeDirt.crop is not null && hoeDirt.crop.GetHarvestMethod() == HarvestMethod.Grab)
+                        {
+                            bool success = hoeDirt.performUseAction(hoeDirt.crop.tilePosition);
+                            if (success)
+                            {
+                                return;
+                            }
                         }
                     }
 
-                    if (IsFertilizer(slot2Item) && dirt.fertilizer.Value is null)
+                    // Auto-shake trees
+                    if (terrainFeature is Tree tree)
                     {
-                        bool success = dirt.plant(slot2Item.ItemId, Game1.player, true);
-                        if (success)
+                        // Don't shake trees that are tapped, because that is impossible in vanilla without removing the tapper.
+                        if (!tree.tapped.Value)
                         {
-                            Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
-                            return;
-                        }
-                    }
-
-                    if (dirt.readyForHarvest() && dirt.crop is not null && dirt.crop.GetHarvestMethod() == HarvestMethod.Grab)
-                    {
-                        bool success = dirt.performUseAction(dirt.crop.tilePosition);
-                        if (success)
-                        {
-                            return;
+                            bool success = tree.performUseAction(tree.Tile);
+                            if (success)
+                            {
+                                return;
+                            }
                         }
                     }
                 }
