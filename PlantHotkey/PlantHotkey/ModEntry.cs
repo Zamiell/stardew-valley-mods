@@ -67,6 +67,7 @@ namespace PlantHotkey
             Vector2[] surroundingTileLocationsArray = Utility.getSurroundingTileLocationsArray(playerTile);
             Vector2[] tiles = surroundingTileLocationsArray.Concat(new[] { playerTile }).ToArray();
 
+            // We return from each successful action to avoid race condition where we can plant more seeds than we have in our inventory.
             foreach (Vector2 tile in tiles)
             {
                 // Auto plant seeds + auto plant fertilizer + auto harvest
@@ -78,6 +79,7 @@ namespace PlantHotkey
                         if (success)
                         {
                             Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                            return;
                         }
                     }
 
@@ -87,12 +89,17 @@ namespace PlantHotkey
                         if (success)
                         {
                             Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
+                            return;
                         }
                     }
 
                     if (dirt.readyForHarvest() && dirt.crop is not null && dirt.crop.GetHarvestMethod() == HarvestMethod.Grab)
                     {
-                        dirt.performUseAction(dirt.crop.tilePosition);
+                        bool success = dirt.performUseAction(dirt.crop.tilePosition);
+                        if (success)
+                        {
+                            return;
+                        }
                     }
                 }
 
@@ -101,36 +108,40 @@ namespace PlantHotkey
                 // Auto empty nearby objects
                 if (obj is not null && obj.readyForHarvest.Value)
                 {
-                    obj.checkForAction(Game1.player);
+                    bool success = obj.checkForAction(Game1.player);
+                    if (success)
+                    {
+                        return;
+                    }
                 }
 
                 // Auto fill Kegs
                 if (obj is not null && obj.Name == "Keg" && IsFruit(slot1Item))
                 {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
                     if (success)
                     {
-                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                        return;
                     }
                 }
 
                 // Auto fill Furnaces
-                if (obj is not null && obj.Name == "Furnace" && IsOre(slot1Item))
+                if (obj is not null && (obj.Name == "Furnace" || obj.Name == "Heavy Furnace") && IsOre(slot1Item))
                 {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
                     if (success)
                     {
-                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                        return;
                     }
                 }
 
                 // Auto-fill Crab Pots
                 if (obj is not null && obj.Name == "Crab Pot" && IsBait(slot1Item))
                 {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
                     if (success)
                     {
-                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                        return;
                     }
                 }
             }

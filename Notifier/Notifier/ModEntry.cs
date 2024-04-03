@@ -1,14 +1,10 @@
 ﻿using Force.DeepCloner;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using StardewValley.Projectiles;
-using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using System.Text.RegularExpressions;
 
@@ -54,6 +50,7 @@ namespace Notifier
             CheckForArtifactSpots();
             CheckDungeonPause();
             CheckCoalNode();
+            CheckSquidKid();
         }
 
         private void CheckForArtifactSpots()
@@ -122,6 +119,35 @@ namespace Notifier
             if (coalPos != Vector2.Zero)
             {
                 Notify($"Floor {floorNum} has a coal node: {coalPos.X}, {coalPos.Y}", "cowboy_gunload");
+            }
+        }
+
+        private void CheckSquidKid()
+        {
+            if (Game1.currentLocation is not MineShaft mineShaft)
+            {
+                return;
+            }
+
+            if (!IsDungeonBattleFloor(mineShaft))
+            {
+                return;
+            }
+
+            var potentialTuple = GetDungeonFloorNum(mineShaft.Name);
+            if (potentialTuple is not (int, bool) tuple)
+            {
+                return;
+            }
+
+            var (floorNum, mines) = tuple;
+
+            foreach (NPC character in Game1.currentLocation.characters)
+            {
+                if (character.Name == "Squid Kid")
+                {
+                    Notify($"Floor {floorNum} has a Squid Kid at: {character.position.X}, {character.Position.Y}", "cowboy_gunload");
+                }
             }
         }
 

@@ -9,6 +9,7 @@ namespace FadeTrees
     {
         // Constants
         private const string TREE_TYPE_OAK = "1";
+        private const float FADE_AMOUNT = 0.25f;
 
         public override void Entry(IModHelper helper)
         {
@@ -33,7 +34,7 @@ namespace FadeTrees
                 {
                     if (terrainFeature is Tree tree && tree.tapped.Value && tree.treeType.Value == TREE_TYPE_OAK)
                     {
-                        tree.alpha = 0.4f;
+                        tree.alpha = FADE_AMOUNT;
                     }
                 }
             }
