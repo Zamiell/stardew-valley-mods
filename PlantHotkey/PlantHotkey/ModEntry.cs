@@ -3,14 +3,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Characters;
-using StardewValley.Extensions;
 using StardewValley.GameData.Crops;
-using StardewValley.Locations;
-using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
-using xTile.Dimensions;
 
 namespace PlantHotkey
 {
@@ -80,14 +74,20 @@ namespace PlantHotkey
                 {
                     if (IsSeed(slot1Item) && dirt.crop is null)
                     {
-                        dirt.plant(slot1Item.ItemId, Game1.player, false);
-                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                        bool success = dirt.plant(slot1Item.ItemId, Game1.player, false);
+                        if (success)
+                        {
+                            Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                        }
                     }
 
                     if (IsFertilizer(slot2Item) && dirt.fertilizer.Value is null)
                     {
-                        dirt.plant(slot2Item.ItemId, Game1.player, true);
-                        Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
+                        bool success = dirt.plant(slot2Item.ItemId, Game1.player, true);
+                        if (success)
+                        {
+                            Game1.player.Items.ReduceId(slot2Item.ItemId, 1);
+                        }
                     }
 
                     if (dirt.readyForHarvest() && dirt.crop is not null && dirt.crop.GetHarvestMethod() == HarvestMethod.Grab)
@@ -107,22 +107,31 @@ namespace PlantHotkey
                 // Auto fill Kegs
                 if (obj is not null && obj.Name == "Keg" && IsFruit(slot1Item))
                 {
-                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
-                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    if (success)
+                    {
+                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    }
                 }
 
                 // Auto fill Furnaces
                 if (obj is not null && obj.Name == "Furnace" && IsOre(slot1Item))
                 {
-                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
-                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    if (success)
+                    {
+                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    }
                 }
 
                 // Auto-fill Crab Pots
                 if (obj is not null && obj.Name == "Crab Pot" && IsBait(slot1Item))
                 {
-                    obj.performObjectDropInAction(slot1Item, false, Game1.player);
-                    Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player);
+                    if (success)
+                    {
+                        Game1.player.Items.ReduceId(slot1Item.ItemId, 1);
+                    }
                 }
             }
         }
@@ -162,7 +171,6 @@ namespace PlantHotkey
             // We intentionally do not use the category of bait to prevent accidentally using non-standard bait.
             return item is not null && item.Name == "Bait";
         }
-
 
         private void Log(string msg)
         {
