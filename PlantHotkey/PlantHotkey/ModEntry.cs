@@ -13,6 +13,7 @@ namespace PlantHotkey
     public class ModEntry : Mod
     {
         private ModConfig config = new();
+
         public override void Entry(IModHelper helper)
         {
             config = helper.ReadConfig<ModConfig>();

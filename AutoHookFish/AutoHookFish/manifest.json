@@ -1,0 +1,10 @@
+{
+  "Name": "Auto Hook Fish",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Automatically hooks fish after a short delay",
+  "UniqueID": "Zamiel.AutoHookFish",
+  "EntryDll": "AutoHookFish.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [ "GitHub:Zamiell/stardew-valley-mods" ]
+}
