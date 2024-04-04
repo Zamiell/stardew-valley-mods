@@ -18,6 +18,6 @@ You can use the same hotkey in other contexts as well, affecting the 9 tiles aro
 - Crops will be automatically harvested if they are ready.
 - Trees will be automatically shaken.
 - Any items that are ready will be automatically taken (e.g. from [Kegs](https://stardewvalleywiki.com/Keg), [Tappers](https://stardewvalleywiki.com/Tapper), and so on).
-- Fruit in the first inventory slot will automatically be planted in any [Kegs](https://stardewvalleywiki.com/Keg).
+- Fruit or vegetables in the first inventory slot will automatically be planted in any [Kegs](https://stardewvalleywiki.com/Keg).
 - Ore in the first inventory slot will automatically be planted in any [Furnaces](https://stardewvalleywiki.com/Furnace).
 - [Bait](https://stardewvalleywiki.com/Bait) in the first inventory slot will automatically be planted in any [Crab Pots](https://stardewvalleywiki.com/Crab_Pot).

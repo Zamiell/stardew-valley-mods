@@ -136,7 +136,7 @@ namespace PlantHotkey
                 }
 
                 // Auto fill Kegs
-                if (obj is not null && obj.Name == "Keg" && IsFruit(slot1Item))
+                if (obj is not null && obj.Name == "Keg" && IsFruitOrVegetable(slot1Item))
                 {
                     bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
                     if (success)
@@ -177,9 +177,9 @@ namespace PlantHotkey
             return item is not null && item.Category == StardewValley.Object.fertilizerCategory;
         }
 
-        private bool IsFruit(Item? item)
+        private bool IsFruitOrVegetable(Item? item)
         {
-            return item is not null && item.Category == StardewValley.Object.FruitsCategory;
+            return item is not null && (item.Category == StardewValley.Object.FruitsCategory || item.Category == StardewValley.Object.VegetableCategory);
         }
 
         private bool IsOre(Item? item)

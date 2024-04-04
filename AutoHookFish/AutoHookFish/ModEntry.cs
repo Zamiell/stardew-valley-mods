@@ -48,9 +48,11 @@ namespace AutoHookFish
             if (fishingRod.fishingNibbleAccumulator >= MILLISECONDS_TO_WAIT)
             {
                 // This code is copied from the "AutoHookEnchantment" functionality in vanilla.
+                /*
                 fishingRod.timePerBobberBob = 1f;
                 fishingRod.timeUntilFishingNibbleDone = FishingRod.maxTimeToNibble;
                 fishingRod.DoFunction(Game1.currentLocation, (int)fishingRod.bobber.X, (int)fishingRod.bobber.Y, 1, Game1.player);
+                */
             }
         }
 
