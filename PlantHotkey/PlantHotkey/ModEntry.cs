@@ -108,7 +108,7 @@ namespace PlantHotkey
                         }
                     }
 
-                    // Auto-shake trees
+                    // Auto-shake normal trees (e.g. Oak Trees)
                     if (terrainFeature is Tree tree)
                     {
                         // Don't shake trees that are tapped, because that is impossible in vanilla without removing the tapper.
@@ -119,6 +119,16 @@ namespace PlantHotkey
                             {
                                 return;
                             }
+                        }
+                    }
+
+                    // Auto-shake fruit trees
+                    if (terrainFeature is FruitTree fruitTree)
+                    {
+                        bool success = fruitTree.performUseAction(fruitTree.Tile);
+                        if (success)
+                        {
+                            return;
                         }
                     }
                 }
