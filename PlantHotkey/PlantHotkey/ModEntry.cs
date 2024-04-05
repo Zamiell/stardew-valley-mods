@@ -117,7 +117,8 @@ namespace PlantHotkey
                             bool success = tree.performUseAction(tree.Tile);
                             if (success)
                             {
-                                return;
+                                // We explicitly do not return since then it will fail to shake trees that are beside each other.
+                                // (This is because a success can happen on every frame.)
                             }
                         }
                     }
@@ -128,7 +129,8 @@ namespace PlantHotkey
                         bool success = fruitTree.performUseAction(fruitTree.Tile);
                         if (success)
                         {
-                            return;
+                            // We explicitly do not return since then it will fail to shake trees that are beside each other.
+                            // (This is because a success can happen on every frame.)
                         }
                     }
                 }
