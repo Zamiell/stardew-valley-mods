@@ -6,5 +6,5 @@
   "UniqueID": "Zamiel.AutomaticScreenshotTaker",
   "EntryDll": "AutomaticScreenshotTaker.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": [ "GitHub:Zamiell/stardew-valley-mods" ]
+  "UpdateKeys": [ "Nexus:10460" ]
 }

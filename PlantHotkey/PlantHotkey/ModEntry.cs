@@ -60,11 +60,11 @@ namespace PlantHotkey
 
             if (config.Hotkey.IsDown())
             {
-                PlantSeedsAndFertilizer();
+                SearchSurroundingTiles();
             }
         }
 
-        private void PlantSeedsAndFertilizer()
+        private void SearchSurroundingTiles()
         {
             Item? slot1Item = Game1.player.Items[0];
             Item? slot2Item = Game1.player.Items[1];
