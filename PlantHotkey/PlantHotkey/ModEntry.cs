@@ -53,6 +53,11 @@ namespace PlantHotkey
                 return;
             }
 
+            if (Game1.activeClickableMenu is not null)
+            {
+                return;
+            }
+
             if (config.Hotkey.IsDown())
             {
                 PlantSeedsAndFertilizer();

@@ -19,25 +19,15 @@ namespace VisibleArtifactSpots
             {
                 if (obj.Name == "Artifact Spot" || obj.Name == "Seed Spot")
                 {
-                    DrawRedRectAroundObject(obj, e.SpriteBatch);
                     DrawNotificationBubbleAboveObject(obj, e.SpriteBatch);
                 }
             }
         }
 
-        private void DrawRedRectAroundObject(StardewValley.Object obj, SpriteBatch spriteBatch)
-        {
-            var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
-            var rect = Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29);
-            var fadedWhite = new Color(255, 255, 255, 127);
-
-            // This draw invocation is copied from the tool hit rectangle in "Farmer.cs".
-            spriteBatch.Draw(Game1.mouseCursors, pos, rect, fadedWhite, 0f, Vector2.Zero, 1f, SpriteEffects.None, pos.Y / 10000f);
-        }
-
         private void DrawNotificationBubbleAboveObject(StardewValley.Object obj, SpriteBatch spriteBatch)
         {
-            var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
+            Vector2 objPos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
+            Vector2 pos = objPos - new Vector2(0, 32); // 1 tile above where the object is
             Rectangle destinationRectangle = new Rectangle((int)pos.X, (int)pos.Y - 32, 64, 64);
 
             spriteBatch.Draw(
