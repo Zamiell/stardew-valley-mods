@@ -2,6 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley.TerrainFeatures;
 using StardewValley;
+using xTile.Dimensions;
 
 namespace FadeTrees
 {
@@ -32,12 +33,22 @@ namespace FadeTrees
             {
                 foreach (var (pos, terrainFeature) in terrainFeatureDict)
                 {
-                    if (terrainFeature is Tree tree && tree.tapped.Value && tree.treeType.Value == TREE_TYPE_OAK)
+                    if (
+                        terrainFeature is Tree tree
+                        && tree.treeType.Value == TREE_TYPE_OAK
+                        && !tree.hasMoss.Value
+                        && (tree.tapped.Value || tree.wasShakenToday.Value)
+                    )
                     {
                         tree.alpha = FADE_AMOUNT;
                     }
                 }
             }
+        }
+
+        private void Log(string msg)
+        {
+            this.Monitor.Log(msg, LogLevel.Debug);
         }
     }
 }

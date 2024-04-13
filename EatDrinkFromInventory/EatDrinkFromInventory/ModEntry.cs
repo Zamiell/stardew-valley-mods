@@ -111,17 +111,18 @@ namespace EatDrinkFromInventory
             {
                 EatObject(obj);
             }
-            else if (obj.Name == "Staircase" && obj.Stack > 1 && Game1.currentLocation is MineShaft mineShaft)
+            else if (obj.Name == "Staircase" && Game1.currentLocation is MineShaft mineShaft)
             {
+                DecrementStack(obj);
+
                 // From: MineShaft.cs
-                obj.Stack--; // "Items.ReduceId" does not work for some reason.
                 Game1.enterMine(mineShaft.mineLevel + 1);
                 Game1.playSound("stairsdown");
                 Game1.activeClickableMenu = null;
             }
-            else if (obj.Name.StartsWith("Warp Totem: Farm"))
+            else if (obj.Name == "Warp Totem: Farm")
             {
-                Game1.player.Items.ReduceId(obj.ItemId, 1);
+                DecrementStack(obj);
 
                 // From: Object::totemWarpForReal
                 if (!Game1.getFarm().TryGetMapPropertyAs("WarpTotemEntry", out Point warp_location, false))
@@ -141,33 +142,38 @@ namespace EatDrinkFromInventory
                 }
                 Game1.warpFarmer("Farm", warp_location.X, warp_location.Y, false);
             }
-            else if (obj.Name.StartsWith("Warp Totem: Mountain"))
+            else if (obj.Name == "Warp Totem: Mountains")
             {
-                Game1.player.Items.ReduceId(obj.ItemId, 1);
+                DecrementStack(obj);
 
                 // From: Object::totemWarpForReal
                 Game1.warpFarmer("Mountain", 31, 20, false);
             }
-            else if (obj.Name.StartsWith("Warp Totem: Beach"))
+            else if (obj.Name == "Warp Totem: Beach")
             {
-                Game1.player.Items.ReduceId(obj.ItemId, 1);
+                DecrementStack(obj);
 
                 // From: Object::totemWarpForReal
                 Game1.warpFarmer("Beach", 20, 4, false);
             }
-            else if (obj.Name.StartsWith("Warp Totem: Desert"))
+            else if (obj.Name == "Warp Totem: Desert")
             {
-                Game1.player.Items.ReduceId(obj.ItemId, 1);
+                DecrementStack(obj);
 
                 // From: Object::totemWarpForReal
                 Game1.warpFarmer("Desert", 35, 43, false);
             }
-            else if (obj.Name.StartsWith("Warp Totem: Island"))
+            else if (obj.Name == "Warp Totem: Island")
             {
-                Game1.player.Items.ReduceId(obj.ItemId, 1);
+                DecrementStack(obj);
 
                 // From: Object::totemWarpForReal
                 Game1.warpFarmer("IslandSouth", 11, 11, false);
+            }
+            else if (obj.Name == "Horse Flute")
+            {
+                Game1.activeClickableMenu = null;
+                obj.performUseAction(Game1.currentLocation);
             }
         }
 
@@ -176,9 +182,21 @@ namespace EatDrinkFromInventory
             usedHotkeyToEat = true;
             facingDirectionBeforeEating = Game1.player.FacingDirection;
 
-            Game1.player.Items.ReduceId(obj.ItemId, 1);
+            DecrementStack(obj);
             Game1.player.eatObject(obj);
             Game1.activeClickableMenu = null;
+        }
+
+        private void DecrementStack(StardewValley.Object obj)
+        {
+            if (obj.Stack > 1)
+            {
+                obj.Stack--;
+            }
+            else
+            {
+                Game1.player.Items.Remove(obj);
+            }
         }
 
         private void EmulatePause()

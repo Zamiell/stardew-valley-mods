@@ -1,18 +1,32 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.BellsAndWhistles;
 using StardewValley.GameData.Crops;
+using StardewValley.Locations;
+using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
+using System.Text.RegularExpressions;
+using xTile.Dimensions;
 
 namespace PlantHotkey
 {
     public class ModEntry : Mod
     {
+        // Enums
+        /// From "Mineshaft.cs"
+        enum TileType
+        {
+            LadderUp = 115,
+            LadderDown = 173,
+            Shaft = 174,
+            CoalSackOrMineCart = 194,
+        }
+
+        // Variables
         private ModConfig config = new();
+        bool usedLadderOnThisFloor = false;
 
         public override void Entry(IModHelper helper)
         {
@@ -20,6 +34,7 @@ namespace PlantHotkey
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            helper.Events.Player.Warped += this.OnWarped;
         }
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -78,6 +93,7 @@ namespace PlantHotkey
             // We return from each successful action to avoid race condition where we can plant more seeds than we have in our inventory.
             foreach (Vector2 tile in tiles)
             {
+                // Terrain features
                 if (location.terrainFeatures.TryGetValue(tile, out var terrainFeature))
                 {
                     // Auto plant seeds + auto plant fertilizer + auto harvest
@@ -140,66 +156,162 @@ namespace PlantHotkey
                     }
                 }
 
+                // Objects
                 StardewValley.Object obj = location.getObjectAtTile((int)tile.X, (int)tile.Y);
-
-                // Auto empty nearby objects
-                if (obj is not null && obj.readyForHarvest.Value)
+                if (obj is not null)
                 {
-                    bool success = obj.checkForAction(Game1.player);
-                    if (success)
+                    // Auto empty nearby objects
+                    if (obj.readyForHarvest.Value)
                     {
-                        return;
+                        bool success = obj.checkForAction(Game1.player);
+                        if (success)
+                        {
+                            return;
+                        }
+                    }
+
+                    // Auto fill Kegs
+                    if (obj.Name == "Keg" && IsFruitOrVegetable(slot1Item))
+                    {
+                        bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
+                        if (success)
+                        {
+                            return;
+                        }
+                    }
+
+                    // Auto fill Furnaces
+                    if ((obj.Name == "Furnace" || obj.Name == "Heavy Furnace") && IsOre(slot1Item))
+                    {
+                        bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
+                        if (success)
+                        {
+                            return;
+                        }
+                    }
+
+                    // Auto-fill Crab Pots
+                    if (obj.Name == "Crab Pot" && IsBait(slot1Item))
+                    {
+                        bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
+                        if (success)
+                        {
+                            return;
+                        }
+                    }
+
+                    // Auto-shake Tea Bushes
+                    if (obj is IndoorPot indoorPot && indoorPot.bush.Value is not null)
+                    {
+                        bool success = indoorPot.bush.Value.performUseAction(indoorPot.TileLocation);
+                        if (success)
+                        {
+                            // We explicitly do not return since then it will fail to shake trees that are beside each other.
+                            // (This is because a success can happen on every frame.)
+                        }
                     }
                 }
 
-                // Auto fill Kegs
-                if (obj is not null && obj.Name == "Keg" && IsFruitOrVegetable(slot1Item))
+                // Specific location things
+                switch (location.Name)
                 {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
-                    if (success)
-                    {
-                        return;
-                    }
+                    // Top floor of the mines.
+                    case "Mine":
+                        // The closest tile that the elevator can be clicked on is (17, 4).
+                        if (tile.X == 17 && tile.Y == 4)
+                        {
+                            if (!usedLadderOnThisFloor)
+                            {
+                                usedLadderOnThisFloor = true;
+                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
+                                location.performAction("MineElevator", Game1.player, tileLocation);
+                                return;
+                            }
+                        }
+                        break;
+
+                    // The tiny entrance to Skull Cavern.
+                    case "SkullCave":
+                        // The closest tile that the door can be clicked on is (3, 4).
+                        if (tile.X == 3 && tile.Y == 4)
+                        {
+                            if (!usedLadderOnThisFloor)
+                            {
+                                usedLadderOnThisFloor = true;
+                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
+                                location.performAction("SkullDoor", Game1.player, tileLocation);
+                                return;
+                            }
+                        }
+                        break;
                 }
 
-                // Auto fill Furnaces
-                if (obj is not null && (obj.Name == "Furnace" || obj.Name == "Heavy Furnace") && IsOre(slot1Item))
+                // Mine shaft things
+                if (location is MineShaft mineShaft)
                 {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
-                    if (success)
+                    int index = location.getTileIndexAt(new Point((int)tile.X, (int)tile.Y), "Buildings");
+                    if (!location.Objects.ContainsKey(tile) && !location.terrainFeatures.ContainsKey(tile))
                     {
-                        return;
-                    }
-                }
+                        Location tileLocation = new Location((int)tile.X, (int)tile.Y);
 
-                // Auto-fill Crab Pots
-                if (obj is not null && obj.Name == "Crab Pot" && IsBait(slot1Item))
-                {
-                    bool success = obj.performObjectDropInAction(slot1Item, false, Game1.player); // This automatically decrements the item stack.
-                    if (success)
-                    {
-                        return;
+                        switch (index)
+                        {
+                            case (int)TileType.LadderUp:
+                                // We only want to automatically go up ladders when farming ore in the mines (and not in Skull Cavern).
+                                if (!IsSkullCavern(location.Name))
+                                {
+                                    if (!usedLadderOnThisFloor)
+                                    {
+                                        usedLadderOnThisFloor = true;
+                                        location.answerDialogueAction("ExitMine_Leave", Array.Empty<string>()); // We want to skip the annoying dialog.
+                                        return;
+                                    }
+                                }
+                                break;
+                            
+                            case (int)TileType.LadderDown:
+                                if (!usedLadderOnThisFloor)
+                                {
+                                    usedLadderOnThisFloor = true;
+                                    location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                    return;
+                                }
+                                break;
+
+                            case (int)TileType.Shaft:
+                                if (!usedLadderOnThisFloor)
+                                {
+                                    usedLadderOnThisFloor = true;
+                                    mineShaft.enterMineShaft(); // We want to skip the annoying dialog.
+                                    return;
+                                }
+                                break;
+
+                            case (int)TileType.CoalSackOrMineCart:
+                                location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                return;
+                        }
                     }
                 }
             }
         }
 
-        private bool IsSeed(Item? item)
+        private static bool IsSeed(Item? item)
         {
             return item is not null && item.Category == StardewValley.Object.SeedsCategory;
         }
 
-        private bool IsFertilizer(Item? item)
+        private static bool IsFertilizer(Item? item)
         {
             return item is not null && item.Category == StardewValley.Object.fertilizerCategory;
         }
 
-        private bool IsFruitOrVegetable(Item? item)
+        private static bool IsFruitOrVegetable(Item? item)
         {
             return item is not null && (item.Category == StardewValley.Object.FruitsCategory || item.Category == StardewValley.Object.VegetableCategory);
         }
 
-        private bool IsOre(Item? item)
+        private static bool IsOre(Item? item)
         {
             if (item == null)
             {
@@ -214,10 +326,36 @@ namespace PlantHotkey
             );
         }
 
-        private bool IsBait(Item? item)
+        private static bool IsBait(Item? item)
         {
             // We intentionally do not use the category of bait to prevent accidentally using non-standard bait.
             return item is not null && item.Name == "Bait";
+        }
+
+        public static bool IsSkullCavern(string locationName)
+        {
+            string pattern = @"\d+";
+            Match match = Regex.Match(locationName, pattern);
+
+            if (!match.Success)
+            {
+                return false;
+            }
+
+            string numericPart = match.Value;
+
+            if (!int.TryParse(numericPart, out int floorNum))
+            {
+                return false;
+            }
+
+            // In Skull Caverns, floor 121 is floor 1.
+            return floorNum > 120;
+        }
+
+        private void OnWarped(object? sender, WarpedEventArgs e)
+        {
+            usedLadderOnThisFloor = false;
         }
 
         private void Log(string msg)

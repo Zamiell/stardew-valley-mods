@@ -29,8 +29,12 @@ namespace AutomaticScreenshotTaker
 
         public bool IsDungeonBattleFloor(GameLocation location)
         {
-            // e.g. "UndergroundMine1" is the first floor of the mines.
-            return location is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine") && !IsMineEmptyFloor(mineShaft);
+            return (
+                // e.g. "UndergroundMine1" is the first floor of the mines.
+                (location is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine") && !IsMineEmptyFloor(mineShaft))
+                // "VolcanoDungeon0" is the first floor of the Volcano Dungeon.
+                || (location.Name.StartsWith("VolcanoDungeon") && location.Name != "VolcanoDungeon0")
+            );
         }
 
         private bool IsMineEmptyFloor(MineShaft mineShaft)
@@ -84,6 +88,11 @@ namespace AutomaticScreenshotTaker
             {
                 Game1.activeClickableMenu = new GameMenu();
             }
+        }
+
+        private void Log(string msg)
+        {
+            this.Monitor.Log(msg, LogLevel.Debug);
         }
     }
 }

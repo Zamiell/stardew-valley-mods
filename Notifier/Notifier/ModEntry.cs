@@ -1,7 +1,9 @@
 ﻿using Force.DeepCloner;
 using Microsoft.Xna.Framework;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -20,16 +22,24 @@ namespace Notifier
         /// From "Mineshaft.cs"
         enum TileType
         {
-            Ladder = 173,
+            LadderUp = 115,
+            LadderDown = 173,
             Shaft = 174,
             CoalSackOrMineCart = 194,
         }
 
         // Variables
+        private ModConfig config = new();
+
         private int currentWateringCanWater = 0;
         public int currentBubblesX = 0;
         public int currentBubblesY = 0;
         public GameLocation currentBubblesLocation = Game1.currentLocation;
+
+        public int currentPanPointX = 0;
+        public int currentPanPointY = 0;
+        public GameLocation currentPanPointLocation = Game1.currentLocation;
+
         private Netcode.NetStringList currentBuffIDs = new Netcode.NetStringList();
         private int currentHealth = 100; // Default starting health on a new character.
         private GameLocation lastLocation = Game1.currentLocation;
@@ -41,30 +51,110 @@ namespace Notifier
 
         public override void Entry(IModHelper helper)
         {
+            config = helper.ReadConfig<ModConfig>();
+
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.Player.Warped += this.OnWarped;
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        }
+
+        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        {
+            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null)
+            {
+                return;
+            }
+
+            configMenu.Register(
+                mod: this.ModManifest,
+                reset: () => config = new ModConfig(),
+                save: () => this.Helper.WriteConfig(config)
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.ArtifactSpots,
+                (bool val) => config.ArtifactSpots = val,
+                () => "Artifact Spots",
+                () => "Whether to notify on artifact spots."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.SeedSpots,
+                (bool val) => config.SeedSpots = val,
+                () => "Seed Spots",
+                () => "Whether to notify on seed spots."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.Bubbles,
+                (bool val) => config.Bubbles = val,
+                () => "Bubbles",
+                () => "Whether to notify on bubbles."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.PanPoints,
+                (bool val) => config.PanPoints = val,
+                () => "Panning Points",
+                () => "Whether to notify on panning points."
+            );
         }
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
             CheckForArtifactSpots();
+            CheckBubblesOnWarp();
+            CheckPanPointOnWarp();
             CheckDungeonPause();
             CheckCoalNode();
-            CheckSquidKid();
+            CheckChests();
         }
 
         private void CheckForArtifactSpots()
         {
-            foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
+             foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
-                if (obj.Name == "Artifact Spot")
+                if (obj.Name == "Artifact Spot" && config.ArtifactSpots)
                 {
-                    Notify($"Artifact spot detected in {Game1.currentLocation.Name} at: {obj.TileLocation.X}, {obj.TileLocation.Y}", "");
+                    Notify($"Artifact spot detected in {Game1.currentLocation.Name} at: (X: {obj.TileLocation.X}, Y: {obj.TileLocation.Y})", "");
                 }
-                else if (obj.Name == "Seed Spot")
+                else if (obj.Name == "Seed Spot" && config.SeedSpots)
                 {
-                    Notify($"Seed spot detected in {Game1.currentLocation.Name} at: {obj.TileLocation.X}, {obj.TileLocation.Y}", "");
+                    Notify($"Seed spot detected in {Game1.currentLocation.Name} at: (X: {obj.TileLocation.X}, Y: {obj.TileLocation.Y})", "");
                 }
+            }
+        }
+
+        private void CheckBubblesOnWarp()
+        {
+            if (Game1.currentLocation.fishSplashPoint is not NetPoint bubbles)
+            {
+                return;
+            }
+
+            bool bubblesExist = bubbles.X != 0 || bubbles.Y != 0;
+            if (bubblesExist && config.Bubbles)
+            {
+                Notify($"Bubbles detected in {Game1.currentLocation.Name} at: (X: {bubbles.X}, Y: {bubbles.Y})", "");
+            }
+        }
+
+        private void CheckPanPointOnWarp()
+        {
+            if (Game1.currentLocation.orePanPoint is not NetPoint panPoint)
+            {
+                return;
+            }
+
+            bool panPointExists = panPoint.X != 0 || panPoint.Y != 0;
+            if (panPointExists && config.PanPoints)
+            {
+                Notify($"Pan point detected in {Game1.currentLocation.Name} at: (X: {panPoint.X}, Y: {panPoint.Y})", "");
             }
         }
 
@@ -103,50 +193,38 @@ namespace Notifier
 
             var (floorNum, mines) = tuple;
 
-            var ladderPos = GetTilePosition(mineShaft, TileType.Ladder);
+            var ladderPos = GetTilePosition(mineShaft, TileType.LadderDown);
             if (ladderPos != Vector2.Zero)
             {
-                Notify($"Floor {floorNum} has an pre-existing ladder at: {ladderPos.X}, {ladderPos.Y}", "cowboy_gunload");
+                Notify($"Floor {floorNum} has an pre-existing ladder at: (X: {ladderPos.X}, Y: {ladderPos.Y})", "cowboy_gunload");
             }
 
             var shaftPos = GetTilePosition(mineShaft, TileType.Shaft);
             if (shaftPos != Vector2.Zero)
             {
-                Notify($"Floor {floorNum} has an pre-existing shaft at: {shaftPos.X}, {shaftPos.Y}", "cowboy_gunload");
+                Notify($"Floor {floorNum} has an pre-existing shaft at: (X: {shaftPos.X}, Y: {shaftPos.Y})", "cowboy_gunload");
             }
 
             var coalPos = GetTilePosition(mineShaft, TileType.CoalSackOrMineCart);
             if (coalPos != Vector2.Zero)
             {
-                Notify($"Floor {floorNum} has a coal node: {coalPos.X}, {coalPos.Y}", "cowboy_gunload");
+                Notify($"Floor {floorNum} has a coal node: (X: {coalPos.X}, Y: {coalPos.Y})", "cowboy_gunload");
             }
         }
 
-        private void CheckSquidKid()
+        public void CheckChests()
         {
-            if (Game1.currentLocation is not MineShaft mineShaft)
+            // "VolcanoDungeon0" is the first floor of the Volcano Dungeon.
+            if (!Game1.currentLocation.Name.StartsWith("VolcanoDungeon") || Game1.currentLocation.Name == "VolcanoDungeon0")
             {
                 return;
             }
 
-            if (!IsDungeonBattleFloor(mineShaft))
+            foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
-                return;
-            }
-
-            var potentialTuple = GetDungeonFloorNum(mineShaft.Name);
-            if (potentialTuple is not (int, bool) tuple)
-            {
-                return;
-            }
-
-            var (floorNum, mines) = tuple;
-
-            foreach (NPC character in Game1.currentLocation.characters)
-            {
-                if (character.Name == "Squid Kid")
+                if (obj.Name == "Chest")
                 {
-                    Notify($"Floor {floorNum} has a Squid Kid at: {character.position.X}, {character.Position.Y}", "cowboy_gunload");
+                    Notify($"Location {Game1.currentLocation.Name} has a chest: (X: {obj.TileLocation.X}, Y: {obj.TileLocation.Y})", "cowboy_gunload");
                 }
             }
         }
@@ -204,21 +282,26 @@ namespace Notifier
             {
                 for (int j = 0; j < mineShaft.Map.GetLayer("Buildings").LayerHeight; j++)
                 {
-                    int index = mineShaft.getTileIndexAt(new Point(i, j), "Buildings");
-                    Vector2 loc = new Vector2(i, j);
-                    if (mineShaft.Objects.ContainsKey(loc) || mineShaft.terrainFeatures.ContainsKey(loc))
+                    if (IsTileTypeOnTile(tileType, i, j, mineShaft))
                     {
-                        continue;
-                    }
-
-                    if (index == (int)tileType)
-                    {
-                        return loc;
+                        return new Vector2(i, j);
                     }
                 }
             }
 
             return Vector2.Zero;
+        }
+
+        private static bool IsTileTypeOnTile(TileType tileType, int i, int j, GameLocation location)
+        {
+            int index = location.getTileIndexAt(new Point(i, j), "Buildings");
+            Vector2 loc = new Vector2(i, j);
+
+            return (
+                index == (int)tileType
+                && !location.Objects.ContainsKey(loc)
+                && !location.terrainFeatures.ContainsKey(loc)
+            );
         }
 
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -229,7 +312,8 @@ namespace Notifier
             }
 
             CheckWateringCan();
-            CheckBubbles();
+            CheckBubblesOnTick();
+            CheckPanPointOnTick();
             CheckBuffWornOff();
             CheckHP();
 
@@ -268,7 +352,7 @@ namespace Notifier
             }
         }
 
-        private void CheckBubbles()
+        private void CheckBubblesOnTick()
         {
             var oldBubblesX = currentBubblesX;
             var newBubblesX = Game1.currentLocation.fishSplashPoint.X;
@@ -295,7 +379,44 @@ namespace Notifier
             bool disappear = newBubblesX == 0 && newBubblesY == 0;
             string msg = disappear ? $"Bubbles disappeared in {Game1.currentLocation.Name}." : $"Bubbles appeared in {Game1.currentLocation.Name}: {newBubblesX}, {newBubblesY}";
             string soundName = disappear ? "cowboy_gunload" : "Cowboy_Secret";
-            Notify(msg, soundName);
+
+            if (config.Bubbles)
+            {
+                Notify(msg, soundName);
+            }
+        }
+
+        private void CheckPanPointOnTick()
+        {
+            var oldPanPointX = currentPanPointX;
+            var newPanPointX = Game1.currentLocation.orePanPoint.X;
+            currentPanPointX = newPanPointX;
+
+            var oldPanPointY = currentPanPointY;
+            var newPanPointY = Game1.currentLocation.orePanPoint.Y;
+            currentPanPointY = newPanPointY;
+
+            var oldPanPointLocation = currentPanPointLocation;
+            var newPanPointLocation = Game1.currentLocation;
+            currentPanPointLocation = newPanPointLocation;
+
+            if (oldPanPointLocation != newPanPointLocation)
+            {
+                return;
+            }
+
+            if (oldPanPointX == newPanPointX && oldPanPointY == newPanPointY)
+            {
+                return;
+            }
+
+            bool disappear = newPanPointX == 0 && newPanPointY == 0;
+            string msg = disappear ? $"Pan point disappeared in {Game1.currentLocation.Name}." : $"Pan point appeared in {Game1.currentLocation.Name}: {newPanPointX}, {newPanPointY}";
+
+            if (config.PanPoints)
+            {
+                Notify(msg, "cowboy_gunload");
+            }
         }
 
         private void CheckBuffWornOff()
@@ -338,7 +459,7 @@ namespace Notifier
 
         private void CheckNewLadderOrShaft(MineShaft mineShaft, bool isNewLocation)
         {
-            var ladderPos = GetTilePosition(mineShaft, TileType.Ladder);
+            var ladderPos = GetTilePosition(mineShaft, TileType.LadderDown);
             Vector2 oldLadderPos = lastLadderPos;
             Vector2 newLadderPos = ladderPos;
             lastLadderPos = ladderPos;
@@ -407,8 +528,8 @@ namespace Notifier
 
             foreach (var sprite in location.TemporarySprites)
             {
-                // The parent tile indexes are harded to match the 3 types of bombs.
-                // See: TemporaryAnimatedSprite.GetTemporaryAnimatedSprite
+                // The parent tile indexes are hard coded to match the 3 types of bombs.
+                // See: TemporaryAnimatedSprite::GetTemporaryAnimatedSprite
                 if (sprite.initialParentTileIndex == 286 || sprite.initialParentTileIndex == 287 || sprite.initialParentTileIndex == 288)
                 {
                     numBombs++;
