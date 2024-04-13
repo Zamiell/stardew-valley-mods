@@ -3,6 +3,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Characters;
 using StardewValley.Locations;
 using StardewValley.Menus;
 
@@ -14,6 +15,8 @@ namespace EatDrinkFromInventory
         bool usedHotkeyToEat = false;
         bool isEating = false;
         int facingDirectionBeforeEating = 0;
+        bool shouldMountHorse = false;
+        GameLocation shouldMountHorseLocation = Game1.currentLocation;
 
         private ModConfig config = new();
 
@@ -56,6 +59,12 @@ namespace EatDrinkFromInventory
                 return;
             }
 
+            CheckEating();
+            CheckHorseAppeared();
+        }
+
+        private void CheckEating()
+        {
             var oldIsEating = isEating;
             var newIsEating = Game1.player.isEating;
             isEating = newIsEating;
@@ -70,6 +79,55 @@ namespace EatDrinkFromInventory
                     EmulatePause();
                 }
             }
+        }
+
+        private void CheckHorseAppeared()
+        {
+            if (!shouldMountHorse)
+            {
+                return;
+            }
+
+            Log("GH0");
+
+            var oldLocation = shouldMountHorseLocation;
+            var newLocation = Game1.currentLocation;
+            shouldMountHorseLocation = newLocation;
+
+            if (oldLocation != newLocation)
+            {
+                shouldMountHorse = false;
+                return;
+            }
+
+            Log("GH1");
+
+            Horse? maybeHorse = GetHorse();
+
+            if (
+                Game1.player.canMove
+                && maybeHorse is Horse horse
+                && horse.Tile.X == Game1.player.Tile.X
+                && horse.Tile.Y == Game1.player.Tile.Y
+            )
+            {
+                Log("GH2");
+                shouldMountHorse = false;
+                horse.checkAction(Game1.player, Game1.currentLocation);
+            }
+        }
+
+        private static Horse? GetHorse()
+        {
+            foreach (NPC character in Game1.currentLocation.characters)
+            {
+                if (character is Horse horse)
+                {
+                    return horse;
+                }
+            }
+
+            return null;
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -174,6 +232,8 @@ namespace EatDrinkFromInventory
             {
                 Game1.activeClickableMenu = null;
                 obj.performUseAction(Game1.currentLocation);
+                shouldMountHorse = true;
+                shouldMountHorseLocation = Game1.currentLocation;
             }
         }
 
