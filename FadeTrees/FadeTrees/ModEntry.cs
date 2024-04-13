@@ -2,7 +2,6 @@
 using StardewModdingAPI.Events;
 using StardewValley.TerrainFeatures;
 using StardewValley;
-using xTile.Dimensions;
 
 namespace FadeTrees
 {
