@@ -88,8 +88,6 @@ namespace EatDrinkFromInventory
                 return;
             }
 
-            Log("GH0");
-
             var oldLocation = shouldMountHorseLocation;
             var newLocation = Game1.currentLocation;
             shouldMountHorseLocation = newLocation;
@@ -100,8 +98,6 @@ namespace EatDrinkFromInventory
                 return;
             }
 
-            Log("GH1");
-
             Horse? maybeHorse = GetHorse();
 
             if (
@@ -111,7 +107,6 @@ namespace EatDrinkFromInventory
                 && horse.Tile.Y == Game1.player.Tile.Y
             )
             {
-                Log("GH2");
                 shouldMountHorse = false;
                 horse.checkAction(Game1.player, Game1.currentLocation);
             }
