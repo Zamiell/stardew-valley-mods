@@ -1,4 +1,4 @@
-# Swap Rings
+# Morning Auto Pause
 
 A mod for [Stardew Valley](https://www.stardewvalley.net/) that automatically pauses the game at the beginning of the day.
 
