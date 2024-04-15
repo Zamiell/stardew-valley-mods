@@ -27,7 +27,10 @@ namespace AutoAnimationCancel
 
         public bool ShouldAnimationCancel()
         {
-            if (Game1.player.CurrentItem is FishingRod) return false;
+            if (Game1.player.CurrentItem is FishingRod)
+            {
+                return false;
+            }
             
             if (Game1.player.CurrentItem is MeleeWeapon w)
             {
