@@ -8,5 +8,6 @@ namespace Notifier
         public bool SeedSpots { get; set; } = true;
         public bool Bubbles { get; set; } = true;
         public bool PanPoints { get; set; } = true;
+        public KeybindList DebugHotkey { get; set; } = KeybindList.Parse("X");
     }
 }

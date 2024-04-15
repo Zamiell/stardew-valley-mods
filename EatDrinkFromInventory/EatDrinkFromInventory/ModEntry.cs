@@ -6,6 +6,8 @@ using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Tools;
+using xTile.Dimensions;
 
 namespace EatDrinkFromInventory
 {
@@ -155,11 +157,17 @@ namespace EatDrinkFromInventory
                 return;
             }
 
-            if (inventoryPage.hoveredItem is not StardewValley.Object obj)
+            if (inventoryPage.hoveredItem is StardewValley.Object obj)
             {
-                return;
+                PotentialUseObject(obj);
+            } else if (inventoryPage.hoveredItem is Tool tool)
+            {
+                PotentiallyUseTool(tool);
             }
+        }
 
+        private void PotentialUseObject(StardewValley.Object obj)
+        {
             if (obj.Edibility > 0)
             {
                 EatObject(obj);
@@ -226,9 +234,72 @@ namespace EatDrinkFromInventory
             else if (obj.Name == "Horse Flute")
             {
                 Game1.activeClickableMenu = null;
-                obj.performUseAction(Game1.currentLocation);
+                // obj.performUseAction(Game1.currentLocation); // We don't want to use the vanilla method because we don't want to wait for the song to play.
+                PerformUseActionHorseFlute(Game1.currentLocation);
                 shouldMountHorse = true;
                 shouldMountHorseLocation = Game1.currentLocation;
+            }
+        }
+
+        // Edited from vanilla:
+        // - Removed increasing the stack.
+        // - Removed the animation. (?)
+        private bool PerformUseActionHorseFlute(GameLocation location)
+        {
+            bool normal_gameplay = (
+                !Game1.eventUp
+                && !Game1.isFestival()
+                && !Game1.fadeToBlack
+                && !Game1.player.swimming.Value
+                && !Game1.player.bathingClothes.Value
+                && !Game1.player.onBridge.Value
+            );
+
+            if (!normal_gameplay)
+            {
+                return false;
+            }
+            string warpError = Utility.GetHorseWarpErrorMessage(Utility.GetHorseWarpRestrictionsForFarmer(Game1.player));
+            if (warpError != null)
+            {
+                Game1.showRedMessage(warpError);
+                return false;
+            }
+
+            Horse? horse = null;
+            foreach (NPC character in location.characters)
+            {
+                if (character is Horse curHorse && curHorse.getOwner() == Game1.player)
+                {
+                    horse = curHorse;
+                    break;
+                }
+            }
+            if (horse == null || Math.Abs(Game1.player.TilePoint.X - horse.TilePoint.X) > 1 || Math.Abs(Game1.player.TilePoint.Y - horse.TilePoint.Y) > 1)
+            {
+                Game1.player.team.requestHorseWarpEvent.Fire(Game1.player.UniqueMultiplayerID);
+            }
+            return true;
+        }
+
+        private void PotentiallyUseTool(Tool tool)
+        {
+            if (tool.Name == "Return Scepter")
+            {
+                // The "wandWarpForReal" method is private. Invoking it via reflection causes a run-time error, so we instead copy paste the function here.
+                // From: Wand::wandWarpForReal
+                FarmHouse home = Utility.getHomeOfFarmer(Game1.player);
+                if (home != null)
+                {
+                    Point position = home.getFrontDoorSpot();
+                    Game1.warpFarmer("Farm", position.X, position.Y, false);
+                    Game1.fadeToBlackAlpha = 0.99f;
+                    Game1.screenGlow = false;
+                    Game1.player.temporarilyInvincible = false;
+                    Game1.player.temporaryInvincibilityTimer = 0;
+                    Game1.displayFarmer = true;
+                    Game1.player.CanMove = true;
+                }
             }
         }
 
@@ -250,7 +321,8 @@ namespace EatDrinkFromInventory
             }
             else
             {
-                Game1.player.Items.Remove(obj);
+                // Cannot use "Items.Remove" since it causes other items to slide around.
+                Game1.player.Items.RemoveButKeepEmptySlot(obj);
             }
         }
 

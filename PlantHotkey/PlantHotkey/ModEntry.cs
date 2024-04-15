@@ -323,6 +323,7 @@ namespace PlantHotkey
                 || item.Name == "Iron Ore"
                 || item.Name == "Gold Ore"
                 || item.Name == "Iridium Ore"
+                || item.Name == "Radioactive Ore"
             );
         }
 

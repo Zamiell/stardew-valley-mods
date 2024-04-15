@@ -56,6 +56,7 @@ namespace Notifier
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.Player.Warped += this.OnWarped;
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -102,6 +103,14 @@ namespace Notifier
                 (bool val) => config.PanPoints = val,
                 () => "Panning Points",
                 () => "Whether to notify on panning points."
+            );
+
+            configMenu.AddKeybindList(
+                this.ModManifest,
+                () => config.DebugHotkey,
+                (KeybindList val) => config.DebugHotkey = val,
+                () => "Debug Hotkey",
+                () => "The hotkey to execute the debug function."
             );
         }
 
@@ -557,6 +566,63 @@ namespace Notifier
             if (oldNumProjectiles > 0 && newNumProjectiles == 0)
             {
                 EmulatePause();
+            }
+        }
+
+        private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+        {
+            if (!Context.IsWorldReady)
+            {
+                return;
+            }
+
+            if (config.DebugHotkey.IsDown())
+            {
+                DebugFunction();
+            }
+        }
+
+        private void DebugFunction()
+        {
+            DestroyItemCursorIsOver();
+        }
+
+        private void DestroyItemCursorIsOver()
+        {
+            if (Game1.activeClickableMenu is not GameMenu gameMenu)
+            {
+                return;
+            }
+
+            if (gameMenu.pages.Count == 0)
+            {
+                return;
+            }
+
+            var firstPage = gameMenu.pages[0];
+            if (firstPage is not InventoryPage inventoryPage)
+            {
+                return;
+            }
+
+            if (inventoryPage.hoveredItem is not StardewValley.Object obj)
+            {
+                return;
+            }
+
+            DecrementStack(obj);
+        }
+
+        private void DecrementStack(StardewValley.Object obj)
+        {
+            if (obj.Stack > 1)
+            {
+                obj.Stack--;
+            }
+            else
+            {
+                // Cannot use "Items.Remove" since it causes other items to slide around.
+                Game1.player.Items.RemoveButKeepEmptySlot(obj);
             }
         }
 
