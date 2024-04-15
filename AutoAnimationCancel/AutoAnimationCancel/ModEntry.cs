@@ -1,5 +1,7 @@
 ﻿using StardewModdingAPI.Events;
 using StardewModdingAPI;
+using StardewValley;
+using StardewValley.Tools;
 
 namespace AutoAnimationCancel
 {
@@ -16,6 +18,45 @@ namespace AutoAnimationCancel
             {
                 return;
             }
+
+            if (ShouldAnimationCancel())
+            {
+                AnimationCancel();
+            }
+        }
+
+        // From: https://github.com/Underscore76/SDVTASMod/blob/main/TASMod/Automation/AnimationCancel.cs
+        public bool ShouldAnimationCancel()
+        {
+            switch (Game1.player.FarmerSprite.CurrentSingleAnimation)
+            {
+                case 66: // Axe/Pickaxe/Hoe down
+                case 48: // Axe/Pickaxe/Hoe left/right
+                case 36: // Axe/Pickaxe/Hoe down
+                    return Game1.player.FarmerSprite.currentAnimationIndex >= 2;
+
+                case 54: // Watering Can down
+                case 58: // Watering Can left/right
+                case 62: // Watering Can up
+                    return Game1.player.FarmerSprite.currentAnimationIndex >= 3;
+
+                default:
+                    return false;
+            }
+        }
+
+        // This is the animation cancel code from: Game1::checkForEscapeKeys
+        private void AnimationCancel()
+        {
+            Game1.freezeControls = false;
+            Game1.player.forceCanMove();
+            Game1.player.completelyStopAnimatingOrDoingAction();
+            Game1.player.UsingTool = false;
+        }
+
+        private void Log(string msg)
+        {
+            this.Monitor.Log(msg, LogLevel.Debug);
         }
     }
 }
