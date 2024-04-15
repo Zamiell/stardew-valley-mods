@@ -100,11 +100,11 @@ namespace EatDrinkFromInventory
                 return;
             }
 
-            Horse? maybeHorse = GetHorse();
+            Horse? potentialHorse = GetHorse(newLocation);
 
             if (
                 Game1.player.canMove
-                && maybeHorse is Horse horse
+                && potentialHorse is Horse horse
                 && horse.Tile.X == Game1.player.Tile.X
                 && horse.Tile.Y == Game1.player.Tile.Y
             )
@@ -112,19 +112,6 @@ namespace EatDrinkFromInventory
                 shouldMountHorse = false;
                 horse.checkAction(Game1.player, Game1.currentLocation);
             }
-        }
-
-        private static Horse? GetHorse()
-        {
-            foreach (NPC character in Game1.currentLocation.characters)
-            {
-                if (character is Horse horse)
-                {
-                    return horse;
-                }
-            }
-
-            return null;
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -270,26 +257,38 @@ namespace EatDrinkFromInventory
                 return false;
             }
 
-            Horse? horse = null;
-            foreach (NPC character in location.characters)
-            {
-                if (character is Horse curHorse && curHorse.getOwner() == Game1.player)
-                {
-                    horse = curHorse;
-                    break;
-                }
-            }
-            if (horse == null || Math.Abs(Game1.player.TilePoint.X - horse.TilePoint.X) > 1 || Math.Abs(Game1.player.TilePoint.Y - horse.TilePoint.Y) > 1)
+            Horse? horse = GetHorse(location);
+            if (
+                horse == null
+                || Math.Abs(Game1.player.TilePoint.X - horse.TilePoint.X) > 1
+                || Math.Abs(Game1.player.TilePoint.Y - horse.TilePoint.Y) > 1
+            )
             {
                 Game1.player.team.requestHorseWarpEvent.Fire(Game1.player.UniqueMultiplayerID);
             }
             return true;
         }
 
+        private Horse? GetHorse(GameLocation location)
+        {
+            foreach (NPC character in location.characters)
+            {
+                if (character is Horse curHorse && curHorse.getOwner() == Game1.player)
+                {
+                    return curHorse;
+                }
+            }
+
+            return null;
+        }
+
         private void PotentiallyUseTool(Tool tool)
         {
             if (tool.Name == "Return Scepter")
             {
+                // Ensure that the horse is dismounted.
+                Game1.player.mount?.dismount();
+
                 // The "wandWarpForReal" method is private. Invoking it via reflection causes a run-time error, so we instead copy paste the function here.
                 // From: Wand::wandWarpForReal
                 FarmHouse home = Utility.getHomeOfFarmer(Game1.player);
