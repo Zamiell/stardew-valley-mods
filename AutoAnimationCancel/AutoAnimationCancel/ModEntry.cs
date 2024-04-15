@@ -1,7 +1,6 @@
 ﻿using StardewModdingAPI.Events;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Tools;
 
 namespace AutoAnimationCancel
 {
