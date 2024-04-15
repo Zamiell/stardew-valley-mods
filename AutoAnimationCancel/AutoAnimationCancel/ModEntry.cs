@@ -37,20 +37,23 @@ namespace AutoAnimationCancel
                         return Game1.player.FarmerSprite.currentAnimationIndex >= 4;
                 }
             }
-
-            // From: https://github.com/Underscore76/SDVTASMod/blob/main/TASMod/Automation/AnimationCancel.cs
-            switch (Game1.player.FarmerSprite.CurrentSingleAnimation)
+            else
             {
-                case 66: // Axe/Pickaxe/Hoe down
-                case 48: // Axe/Pickaxe/Hoe left/right
-                case 36: // Axe/Pickaxe/Hoe down
-                    return Game1.player.FarmerSprite.currentAnimationIndex >= 2;
+                // From: https://github.com/Underscore76/SDVTASMod/blob/main/TASMod/Automation/AnimationCancel.cs
+                switch (Game1.player.FarmerSprite.CurrentSingleAnimation)
+                {
+                    case 66: // Axe/Pickaxe/Hoe down
+                    case 48: // Axe/Pickaxe/Hoe left/right
+                    case 36: // Axe/Pickaxe/Hoe down
+                        return Game1.player.FarmerSprite.currentAnimationIndex >= 2;
 
-                case 54: // Watering Can down
-                case 58: // Watering Can left/right
-                case 62: // Watering Can up
-                    return Game1.player.FarmerSprite.currentAnimationIndex >= 3;
+                    case 54: // Watering Can down
+                    case 58: // Watering Can left/right
+                    case 62: // Watering Can up
+                        return Game1.player.FarmerSprite.currentAnimationIndex >= 3;
+                }
             }
+
             return false;
         }
 
