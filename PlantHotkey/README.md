@@ -15,9 +15,19 @@ This mod is not yet published.
 
 You can use the same hotkey in other contexts as well, affecting the 9 tiles around the player:
 
-- Crops will be automatically harvested if they are ready.
-- Trees will be automatically shaken.
+- Items that can be picked up (e.g. crops, foraging items) will be automatically picked up.
+- Trees and [Tea Bushes](https://stardewvalleywiki.com/Tea_Bush) will be automatically shaken.
 - Any items that are ready will be automatically taken (e.g. from [Kegs](https://stardewvalleywiki.com/Keg), [Tappers](https://stardewvalleywiki.com/Tapper), and so on).
 - Fruit or vegetables in the first inventory slot will automatically be planted in any [Kegs](https://stardewvalleywiki.com/Keg).
 - Ore in the first inventory slot will automatically be planted in any [Furnaces](https://stardewvalleywiki.com/Furnace).
 - [Bait](https://stardewvalleywiki.com/Bait) in the first inventory slot will automatically be planted in any [Crab Pots](https://stardewvalleywiki.com/Crab_Pot).
+- Mines:
+  - The elevator will automatically be clicked on.
+  - Ladders down will automatically be clicked on.
+  - Ladders up will automatically be clicked on.
+- Skull Cavern:
+  - The entrance door will be automatically clicked on.
+  - Ladders down will automatically be clicked on.
+  - Shafts will automatically be clicked on. (The dialog is also removed.)
+- Sewer:
+  - The exit ladder will automatically be clicked on.

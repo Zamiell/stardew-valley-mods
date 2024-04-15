@@ -130,7 +130,7 @@ namespace PlantHotkey
                     }
 
                     // Auto-shake normal trees (e.g. Oak Trees)
-                    if (terrainFeature is Tree tree)
+                    else if (terrainFeature is Tree tree)
                     {
                         // Don't shake trees that are tapped, because that is impossible in vanilla without removing the tapper.
                         if (!tree.tapped.Value)
@@ -145,7 +145,7 @@ namespace PlantHotkey
                     }
 
                     // Auto-shake fruit trees
-                    if (terrainFeature is FruitTree fruitTree)
+                    else if (terrainFeature is FruitTree fruitTree)
                     {
                         bool success = fruitTree.performUseAction(fruitTree.Tile);
                         if (success)
@@ -210,6 +210,18 @@ namespace PlantHotkey
                             // (This is because a success can happen on every frame.)
                         }
                     }
+
+                    // Auto-forage
+                    if (obj.CanBeGrabbed)
+                    {
+                        // "obj.performUseAction" does nothing for foragable items.
+                        Location tileLocation = new Location((int)tile.X, (int)tile.Y);
+                        bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
+                        if (success)
+                        {
+                            return;
+                        }
+                    }
                 }
 
                 // Specific location things
@@ -217,8 +229,9 @@ namespace PlantHotkey
                 {
                     // Top floor of the mines.
                     case "Mine":
-                        // The closest tile that the elevator can be clicked on is (17, 4).
-                        if (tile.X == 17 && tile.Y == 4)
+                        // This is the tile that the elevator is located at. You can also right-click on the tile below the elevator in order to bring up the menu,
+                        // but this also involves a distance check. By checking for the elevator tile, the mod correctly emulates the vanilla behavior.
+                        if (tile.X == 17 && tile.Y == 3)
                         {
                             if (!usedLadderOnThisFloor)
                             {
@@ -241,6 +254,22 @@ namespace PlantHotkey
                                 Location tileLocation = new Location((int)tile.X, (int)tile.Y);
                                 location.performAction("SkullDoor", Game1.player, tileLocation);
                                 return;
+                            }
+                        }
+                        break;
+
+                    case "Sewer":
+                        if (tile.X == 16 && tile.Y == 10)
+                        {
+                            if (!usedLadderOnThisFloor)
+                            {
+                                usedLadderOnThisFloor = true;
+                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
+                                bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                if (success)
+                                {
+                                    return;
+                                }
                             }
                         }
                         break;
