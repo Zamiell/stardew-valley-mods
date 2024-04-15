@@ -1,6 +1,7 @@
 ﻿using StardewModdingAPI.Events;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Tools;
 
 namespace AutoAnimationCancel
 {
@@ -24,9 +25,20 @@ namespace AutoAnimationCancel
             }
         }
 
-        // From: https://github.com/Underscore76/SDVTASMod/blob/main/TASMod/Automation/AnimationCancel.cs
         public bool ShouldAnimationCancel()
         {
+            if (Game1.player.CurrentItem is MeleeWeapon w)
+            {
+                switch (Game1.player.FarmerSprite.CurrentSingleAnimation)
+                {
+                    case 24: // Swing down
+                    case 30: // Swing left/right
+                    case 36: // Swing up
+                        return Game1.player.FarmerSprite.currentAnimationIndex >= 4;
+                }
+            }
+
+            // From: https://github.com/Underscore76/SDVTASMod/blob/main/TASMod/Automation/AnimationCancel.cs
             switch (Game1.player.FarmerSprite.CurrentSingleAnimation)
             {
                 case 66: // Axe/Pickaxe/Hoe down
@@ -38,10 +50,8 @@ namespace AutoAnimationCancel
                 case 58: // Watering Can left/right
                 case 62: // Watering Can up
                     return Game1.player.FarmerSprite.currentAnimationIndex >= 3;
-
-                default:
-                    return false;
             }
+            return false;
         }
 
         // This is the animation cancel code from: Game1::checkForEscapeKeys
