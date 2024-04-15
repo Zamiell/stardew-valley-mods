@@ -243,7 +243,7 @@ namespace EatDrinkFromInventory
 
         // Edited from vanilla:
         // - Removed increasing the stack.
-        // - Removed the animation. (?)
+        // - Removed the animation by invoking the event directly.
         private bool PerformUseActionHorseFlute(GameLocation location)
         {
             bool normal_gameplay = (

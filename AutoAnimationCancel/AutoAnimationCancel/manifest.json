@@ -1,0 +1,10 @@
+{
+  "Name": "Auto Animation Cancel",
+  "Author": "Zamiel",
+  "Version": "1.0.0",
+  "Description": "Automatically animation cancels a tool swing on the optimal frame",
+  "UniqueID": "Zamiel.AutoAnimationCancel",
+  "EntryDll": "AutoAnimationCancel.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [ "GitHub:Zamiell/stardew-valley-mods" ]
+}
