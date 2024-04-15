@@ -233,11 +233,15 @@ namespace EatDrinkFromInventory
             }
             else if (obj.Name == "Horse Flute")
             {
-                Game1.activeClickableMenu = null;
-                // obj.performUseAction(Game1.currentLocation); // We don't want to use the vanilla method because we don't want to wait for the song to play.
-                PerformUseActionHorseFlute(Game1.currentLocation);
-                shouldMountHorse = true;
-                shouldMountHorseLocation = Game1.currentLocation;
+                // We can invoke the vanilla method by using: obj.performUseAction(Game1.currentLocation)
+                // However, we don't want to wait for the song to play, so we reimplement the logic.
+                bool success = PerformUseActionHorseFlute(Game1.currentLocation);
+                if (success)
+                {
+                    Game1.activeClickableMenu = null;
+                    shouldMountHorse = true;
+                    shouldMountHorseLocation = Game1.currentLocation;
+                }
             }
         }
 
@@ -246,7 +250,7 @@ namespace EatDrinkFromInventory
         // - Removed the animation by invoking the event directly.
         private bool PerformUseActionHorseFlute(GameLocation location)
         {
-            bool normal_gameplay = (
+            bool normalGameplay = (
                 !Game1.eventUp
                 && !Game1.isFestival()
                 && !Game1.fadeToBlack
@@ -254,11 +258,11 @@ namespace EatDrinkFromInventory
                 && !Game1.player.bathingClothes.Value
                 && !Game1.player.onBridge.Value
             );
-
-            if (!normal_gameplay)
+            if (!normalGameplay)
             {
                 return false;
             }
+
             string warpError = Utility.GetHorseWarpErrorMessage(Utility.GetHorseWarpRestrictionsForFarmer(Game1.player));
             if (warpError != null)
             {
