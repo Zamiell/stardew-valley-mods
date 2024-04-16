@@ -81,6 +81,11 @@ namespace PlantHotkey
 
         private void SearchSurroundingTiles()
         {
+            if (usedLadderOnThisFloor)
+            {
+                return;
+            }
+
             Item? slot1Item = Game1.player.Items[0];
             Item? slot2Item = Game1.player.Items[1];
 
@@ -93,6 +98,8 @@ namespace PlantHotkey
             // We return from each successful action to avoid race condition where we can plant more seeds than we have in our inventory.
             foreach (Vector2 tile in tiles)
             {
+                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
+
                 // Terrain features
                 if (location.terrainFeatures.TryGetValue(tile, out var terrainFeature))
                 {
@@ -212,10 +219,9 @@ namespace PlantHotkey
                     }
 
                     // Auto-forage
-                    if (obj.CanBeGrabbed)
+                    if (obj.CanBeGrabbed && obj.Name != "Anvil" && obj.Name != "Mini-Forge")
                     {
                         // "obj.performUseAction" does nothing for foragable items.
-                        Location tileLocation = new Location((int)tile.X, (int)tile.Y);
                         bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
                         if (success)
                         {
@@ -233,43 +239,83 @@ namespace PlantHotkey
                         // but this also involves a distance check. By checking for the elevator tile, the mod correctly emulates the vanilla behavior.
                         if (tile.X == 17 && tile.Y == 3)
                         {
-                            if (!usedLadderOnThisFloor)
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("MineElevator", Game1.player, tileLocation);
+                            if (success)
                             {
-                                usedLadderOnThisFloor = true;
-                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
-                                location.performAction("MineElevator", Game1.player, tileLocation);
                                 return;
                             }
                         }
+
+                        if (tile.X == 12 && tile.Y == 10) // The mine cart tile to the left of the entrance.
+                        {
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
+                            if (success)
+                            {
+                                return;
+                            }
+                        }
+
                         break;
 
                     // The tiny entrance to Skull Cavern.
                     case "SkullCave":
-                        // The closest tile that the door can be clicked on is (3, 4).
                         if (tile.X == 3 && tile.Y == 4)
                         {
-                            if (!usedLadderOnThisFloor)
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("SkullDoor", Game1.player, tileLocation);
+                            if (success)
                             {
-                                usedLadderOnThisFloor = true;
-                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
-                                location.performAction("SkullDoor", Game1.player, tileLocation);
                                 return;
                             }
                         }
                         break;
 
                     case "Sewer":
-                        if (tile.X == 16 && tile.Y == 10)
+                        if (tile.X == 16 && tile.Y == 10) // The ladder tile to the left of Krobus.
                         {
-                            if (!usedLadderOnThisFloor)
+                            usedLadderOnThisFloor = true;
+                            bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
+                            if (success)
                             {
-                                usedLadderOnThisFloor = true;
-                                Location tileLocation = new Location((int)tile.X, (int)tile.Y);
-                                bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
-                                if (success)
-                                {
-                                    return;
-                                }
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "Town":
+                        if (tile.X == 105 && tile.Y == 79) // The mine cart tile next to the blacksmith.
+                        {
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
+                            if (success)
+                            {
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "BusStop":
+                        if (tile.X == 14 && tile.Y == 3) // The mine cart tile for the bus stop.
+                        {
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
+                            if (success)
+                            {
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "Mountain":
+                        if (tile.X == 124 && tile.Y == 11) // The mine cart tile for quarry.
+                        {
+                            usedLadderOnThisFloor = true;
+                            bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
+                            if (success)
+                            {
+                                return;
                             }
                         }
                         break;
@@ -281,44 +327,36 @@ namespace PlantHotkey
                     int index = location.getTileIndexAt(new Point((int)tile.X, (int)tile.Y), "Buildings");
                     if (!location.Objects.ContainsKey(tile) && !location.terrainFeatures.ContainsKey(tile))
                     {
-                        Location tileLocation = new Location((int)tile.X, (int)tile.Y);
-
+                        bool success = false;
                         switch (index)
                         {
                             case (int)TileType.LadderUp:
                                 // We only want to automatically go up ladders when farming ore in the mines (and not in Skull Cavern).
                                 if (!IsSkullCavern(location.Name))
                                 {
-                                    if (!usedLadderOnThisFloor)
-                                    {
-                                        usedLadderOnThisFloor = true;
-                                        location.answerDialogueAction("ExitMine_Leave", Array.Empty<string>()); // We want to skip the annoying dialog.
-                                        return;
-                                    }
+                                    usedLadderOnThisFloor = true;
+                                    location.answerDialogueAction("ExitMine_Leave", Array.Empty<string>()); // We want to skip the annoying dialog.
+                                    return;
                                 }
                                 break;
                             
                             case (int)TileType.LadderDown:
-                                if (!usedLadderOnThisFloor)
-                                {
-                                    usedLadderOnThisFloor = true;
-                                    location.checkAction(tileLocation, Game1.viewport, Game1.player);
-                                    return;
-                                }
-                                break;
+                                usedLadderOnThisFloor = true;
+                                success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                return;
 
                             case (int)TileType.Shaft:
-                                if (!usedLadderOnThisFloor)
+                                usedLadderOnThisFloor = true;
+                                mineShaft.enterMineShaft(); // We want to skip the annoying dialog.
+                                return;
+
+                            case (int)TileType.CoalSackOrMineCart:
+                                success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                if (success)
                                 {
-                                    usedLadderOnThisFloor = true;
-                                    mineShaft.enterMineShaft(); // We want to skip the annoying dialog.
                                     return;
                                 }
                                 break;
-
-                            case (int)TileType.CoalSackOrMineCart:
-                                location.checkAction(tileLocation, Game1.viewport, Game1.player);
-                                return;
                         }
                     }
                 }

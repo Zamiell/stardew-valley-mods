@@ -7,6 +7,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Objects;
 using StardewValley.Tools;
 using System.Text.RegularExpressions;
 
@@ -223,19 +224,23 @@ namespace Notifier
 
         public void CheckChests()
         {
-            // "VolcanoDungeon0" is the first floor of the Volcano Dungeon.
-            if (!Game1.currentLocation.Name.StartsWith("VolcanoDungeon") || Game1.currentLocation.Name == "VolcanoDungeon0")
-            {
-                return;
-            }
-
             foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
-                if (obj.Name == "Chest")
+                if (obj is Chest chest && !chest.playerChest.Value && !IsChestOpened(chest))
                 {
                     Notify($"Location {Game1.currentLocation.Name} has a chest: (X: {obj.TileLocation.X}, Y: {obj.TileLocation.Y})", "cowboy_gunload");
                 }
             }
+        }
+
+        private bool IsChestOpened(Chest chest)
+        {
+            // "currentLidFrame" is private, so we have to use reflection.
+            int currentLidFrame = this.Helper.Reflection.GetField<int>(chest, "currentLidFrame").GetValue();
+
+            // currentLidFrame is 224 on a closed chest.
+            // currentLidFrame is 226 on an opened chest.
+            return currentLidFrame != 224;
         }
 
         public bool IsDungeonBattleFloor(GameLocation location)

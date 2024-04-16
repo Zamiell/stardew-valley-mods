@@ -4,6 +4,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Characters;
+using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using System.Runtime.CompilerServices;
 
@@ -105,16 +107,8 @@ namespace VisibleArtifactSpots
                 this.ModManifest,
                 () => config.HighlightChests,
                 (bool val) => config.HighlightChests = val,
-                () => "Chests",
-                () => "Whether to highlight chests."
-            );
-
-            configMenu.AddBoolOption(
-                this.ModManifest,
-                () => config.HighlightChests,
-                (bool val) => config.HighlightChests = val,
-                () => "Chests",
-                () => "Whether to highlight chests."
+                () => "Chests (in Volcano Dungeon)",
+                () => "Whether to highlight chests in the Volcano Dungeon."
             );
 
             configMenu.AddBoolOption(
@@ -178,8 +172,23 @@ namespace VisibleArtifactSpots
                 || (obj.Name == "Stone" && description.Contains("gold") && config.HighlightGoldNodes)
                 || (obj.Name == "Stone" && description.Contains("iridium") && config.HighlightIridiumNodes)
                 || (obj.Name == "Stone" && description.Contains("cinder") && config.HighlightCinderNodes)
-                || (obj.Name == "Chest" && Game1.currentLocation.Name.StartsWith("VolcanoDungeon") && config.HighlightChests)
+                || (obj is Chest chest && !chest.playerChest.Value && !IsChestOpened(chest) && InVolcanoDungeon() && config.HighlightChests)
             );
+        }
+
+        private bool IsChestOpened(Chest chest)
+        {
+            // "currentLidFrame" is private, so we have to use reflection.
+            int currentLidFrame = this.Helper.Reflection.GetField<int>(chest, "currentLidFrame").GetValue();
+
+            // currentLidFrame is 224 on a closed chest.
+            // currentLidFrame is 226 on an opened chest.
+            return currentLidFrame != 224;
+        }
+
+        private bool InVolcanoDungeon()
+        {
+            return Game1.currentLocation.Name.StartsWith("VolcanoDungeon") && Game1.currentLocation.Name != "VolcanoDungeon0";
         }
 
         private void CheckLocationTerrainFeatures(SpriteBatch spriteBatch)
