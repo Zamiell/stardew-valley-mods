@@ -4,6 +4,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.TerrainFeatures;
 using System.Runtime.CompilerServices;
 
 namespace VisibleArtifactSpots
@@ -40,8 +41,104 @@ namespace VisibleArtifactSpots
                 () => config.HighlightType,
                 (string val) => config.HighlightType = val,
                 () => "Highlight type",
-                () => "The way to highlight spots.",
-                new string[] { "Border", "Bubble" }
+                () => "The way to highlight things.",
+                new string[] { "Border", "Bubble", "Both" }
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightArtifactSpots,
+                (bool val) => config.HighlightArtifactSpots = val,
+                () => "Artifact Spots",
+                () => "Whether to highlight artifact spots."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightSeedSpots,
+                (bool val) => config.HighlightSeedSpots = val,
+                () => "Seed Spots",
+                () => "Whether to highlight seed spots."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightCopperNodes,
+                (bool val) => config.HighlightCopperNodes = val,
+                () => "Copper Nodes",
+                () => "Whether to highlight copper nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightIronNodes,
+                (bool val) => config.HighlightIronNodes = val,
+                () => "Iron Nodes",
+                () => "Whether to highlight iron nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightGoldNodes,
+                (bool val) => config.HighlightGoldNodes = val,
+                () => "Gold Nodes",
+                () => "Whether to highlight gold nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightIridiumNodes,
+                (bool val) => config.HighlightIridiumNodes = val,
+                () => "Iridium Nodes",
+                () => "Whether to highlight iridium nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightCinderNodes,
+                (bool val) => config.HighlightCinderNodes = val,
+                () => "Cinder Nodes",
+                () => "Whether to highlight cinder nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightChests,
+                (bool val) => config.HighlightChests = val,
+                () => "Chests",
+                () => "Whether to highlight chests."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightChests,
+                (bool val) => config.HighlightChests = val,
+                () => "Chests",
+                () => "Whether to highlight chests."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightNonPlanted,
+                (bool val) => config.HighlightNonPlanted = val,
+                () => "Non-Planted Crops",
+                () => "Whether to highlight tiles with no crops planted."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightNonWatered,
+                (bool val) => config.HighlightNonWatered = val,
+                () => "Non-Watered Crops",
+                () => "Whether to highlight tiles that are not watered."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightNonFertilized,
+                (bool val) => config.HighlightNonFertilized = val,
+                () => "Non-Fertilized Crops",
+                () => "Whether to highlight tiles that are not fertilized."
             );
         }
 
@@ -53,29 +150,80 @@ namespace VisibleArtifactSpots
             }
 
             CheckLocationObjects(e.SpriteBatch);
+            CheckLocationTerrainFeatures(e.SpriteBatch);
         }
 
         private void CheckLocationObjects(SpriteBatch spriteBatch)
         {
             foreach (StardewValley.Object obj in Game1.currentLocation.objects.Values)
             {
-                if (obj.Name == "Artifact Spot" || obj.Name == "Seed Spot")
+                if (ShouldHighlightObject(obj))
                 {
-                    HighlightObject(obj, spriteBatch);
+                    int x = (int)obj.TileLocation.X;
+                    int y = (int)obj.TileLocation.Y;
+                    HighlightTile(x, y, spriteBatch);
                 }
             }
         }
 
-        private void HighlightObject(StardewValley.Object obj, SpriteBatch spriteBatch)
+        private bool ShouldHighlightObject(StardewValley.Object obj)
+        {
+            string description = obj.getDescription();
+
+            return (
+                (obj.Name == "Artifact Spot" && config.HighlightArtifactSpots)
+                || (obj.Name == "Seed Spot" && config.HighlightSeedSpots)
+                || (obj.Name == "Stone" && description.Contains("copper") && config.HighlightCopperNodes)
+                || (obj.Name == "Stone" && description.Contains("iron") && config.HighlightIronNodes)
+                || (obj.Name == "Stone" && description.Contains("gold") && config.HighlightGoldNodes)
+                || (obj.Name == "Stone" && description.Contains("iridium") && config.HighlightIridiumNodes)
+                || (obj.Name == "Stone" && description.Contains("cinder") && config.HighlightCinderNodes)
+                || (obj.Name == "Chest" && Game1.currentLocation.Name.StartsWith("VolcanoDungeon") && config.HighlightChests)
+            );
+        }
+
+        private void CheckLocationTerrainFeatures(SpriteBatch spriteBatch)
+        {
+            foreach (TerrainFeature terrainFeature in Game1.currentLocation.terrainFeatures.Values)
+            {
+                if (ShouldHighlightTerrainFeature(terrainFeature))
+                {
+                    int x = (int)terrainFeature.Tile.X;
+                    int y = (int)terrainFeature.Tile.Y;
+                    HighlightTile(x, y, spriteBatch);
+                }
+            }
+        }
+
+        private bool ShouldHighlightTerrainFeature(TerrainFeature terrainFeature)
+        {
+            if (terrainFeature is HoeDirt hoeDirt)
+            {
+                return (
+                    (hoeDirt.crop is null && config.HighlightNonPlanted)
+                    || (!hoeDirt.isWatered() && config.HighlightNonWatered)
+                    || (hoeDirt.fertilizer.Value is null && config.HighlightNonFertilized)
+                );
+            }
+
+            return false;
+        }
+
+        private void HighlightTile(int x, int y, SpriteBatch spriteBatch)
         {
             switch (config.HighlightType)
             {
                 case "Border":
-                    DrawRedBorderAroundObject(obj, spriteBatch);
+                    DrawRedBorderAroundObject(x, y, spriteBatch);
                     break;
 
                 case "Bubble":
-                    DrawNotificationBubbleAboveObject(obj, spriteBatch);
+                    DrawNotificationBubbleAboveObject(x, y, spriteBatch);
+                    break;
+
+                case "Both":
+                    DrawRedBorderAroundObject(x, y, spriteBatch);
+                    DrawNotificationBubbleAboveObject(x, y, spriteBatch);
                     break;
 
                 default:
@@ -83,9 +231,9 @@ namespace VisibleArtifactSpots
             }
         }
 
-        private void DrawRedBorderAroundObject(StardewValley.Object obj, SpriteBatch spriteBatch)
+        private void DrawRedBorderAroundObject(int x, int y, SpriteBatch spriteBatch)
         {
-            var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
+            var pos = Game1.GlobalToLocal(Game1.viewport, new Vector2(x * 64, y * 64));
             var rect = Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29);
             var fadedWhite = new Color(255, 255, 255, 127);
 
@@ -93,9 +241,9 @@ namespace VisibleArtifactSpots
             spriteBatch.Draw(Game1.mouseCursors, pos, rect, fadedWhite, 0f, Vector2.Zero, 1f, SpriteEffects.None, pos.Y / 10000f);
         }
 
-        private void DrawNotificationBubbleAboveObject(StardewValley.Object obj, SpriteBatch spriteBatch)
+        private void DrawNotificationBubbleAboveObject(int x, int y, SpriteBatch spriteBatch)
         {
-            Vector2 objPos = Game1.GlobalToLocal(Game1.viewport, new Vector2(obj.TileLocation.X * 64, obj.TileLocation.Y * 64));
+            Vector2 objPos = Game1.GlobalToLocal(Game1.viewport, new Vector2(x * 64, y * 64));
             Vector2 pos = objPos - new Vector2(0, 32); // 1 tile above where the object is
             Rectangle destinationRectangle = new Rectangle((int)pos.X, (int)pos.Y - 32, 64, 64);
 
@@ -106,7 +254,7 @@ namespace VisibleArtifactSpots
                 Color.White * 0.95f, 0.0f,
                 Vector2.Zero,
                 SpriteEffects.None,
-                (float)((obj.TileLocation.Y - 1) * 64) / 10000f
+                (float)((y - 1) * 64) / 10000f
             );
         }
 
