@@ -7,6 +7,8 @@ namespace VisibleArtifactSpots
         public string HighlightType { get; set; } = "Border";
         public bool HighlightArtifactSpots { get; set; } = true;
         public bool HighlightSeedSpots { get; set; } = true;
+        public bool HighlightTwigs { get; set; } = false;
+        public bool HighlightStones { get; set; } = false;
         public bool HighlightCopperNodes { get; set; } = false;
         public bool HighlightIronNodes { get; set; } = false;
         public bool HighlightGoldNodes { get; set; } = false;
@@ -17,5 +19,6 @@ namespace VisibleArtifactSpots
         public bool HighlightNonPlanted { get; set; } = false;
         public bool HighlightNonWatered { get; set; } = false;
         public bool HighlightNonFertilized { get; set; } = false;
+        public bool HighlightHoeableTile { get; set; } = false;
     }
 }

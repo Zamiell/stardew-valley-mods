@@ -2,12 +2,11 @@
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Characters;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using System.Runtime.CompilerServices;
+using xTile.Dimensions;
+using xTile.Tiles;
 
 namespace VisibleArtifactSpots
 {
@@ -61,6 +60,22 @@ namespace VisibleArtifactSpots
                 (bool val) => config.HighlightSeedSpots = val,
                 () => "Seed Spots",
                 () => "Whether to highlight seed spots."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightTwigs,
+                (bool val) => config.HighlightTwigs = val,
+                () => "Twigs",
+                () => "Whether to highlight twigs."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightStones,
+                (bool val) => config.HighlightStones = val,
+                () => "Stones",
+                () => "Whether to highlight stones."
             );
 
             configMenu.AddBoolOption(
@@ -131,7 +146,7 @@ namespace VisibleArtifactSpots
                 this.ModManifest,
                 () => config.HighlightNonWatered,
                 (bool val) => config.HighlightNonWatered = val,
-                () => "Non-Watered Crops",
+                () => "Non-Watered Tiles",
                 () => "Whether to highlight tiles that are not watered."
             );
 
@@ -141,6 +156,14 @@ namespace VisibleArtifactSpots
                 (bool val) => config.HighlightNonFertilized = val,
                 () => "Non-Fertilized Crops",
                 () => "Whether to highlight tiles that are not fertilized."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightHoeableTile,
+                (bool val) => config.HighlightHoeableTile = val,
+                () => "Hoeable Tile",
+                () => "Whether to highlight tiles that are hoeable and are not hoed."
             );
         }
 
@@ -153,6 +176,7 @@ namespace VisibleArtifactSpots
 
             CheckLocationObjects(e.SpriteBatch);
             CheckLocationTerrainFeatures(e.SpriteBatch);
+            CheckLocationTiles(e.SpriteBatch);
         }
 
         private void CheckLocationObjects(SpriteBatch spriteBatch)
@@ -172,9 +196,14 @@ namespace VisibleArtifactSpots
         {
             string description = obj.getDescription();
 
+            // The name of all ore nodes is "Stone", so we need a way to differentiate the types.
+            // The naive way is to use the item IDs, but ore nodes can have multiple item IDs.
+            // Thus, we can make the code simpler by using the description.
             return (
                 (obj.Name == "Artifact Spot" && config.HighlightArtifactSpots)
                 || (obj.Name == "Seed Spot" && config.HighlightSeedSpots)
+                || (obj.Name == "Twig" && config.HighlightTwigs && !InDungeon())
+                || (obj.Name == "Stone" && config.HighlightStones && !InDungeon())
                 || (obj.Name == "Stone" && description.Contains("copper") && config.HighlightCopperNodes)
                 || (obj.Name == "Stone" && description.Contains("iron") && config.HighlightIronNodes)
                 || (obj.Name == "Stone" && description.Contains("gold") && config.HighlightGoldNodes)
@@ -193,6 +222,17 @@ namespace VisibleArtifactSpots
             // currentLidFrame is 224 on a closed chest.
             // currentLidFrame is 226 on an opened chest.
             return currentLidFrame != 224;
+        }
+
+        private bool InDungeon()
+        {
+            return InMinesOrSkullCavern() || InVolcanoDungeon();
+        }
+
+        private bool InMinesOrSkullCavern()
+        {
+            // The first floor of the mines is "Mine".
+            return Game1.currentLocation.Name.StartsWith("UndergroundMine");
         }
 
         private bool InVolcanoDungeon()
@@ -225,6 +265,46 @@ namespace VisibleArtifactSpots
             }
 
             return false;
+        }
+
+        private void CheckLocationTiles(SpriteBatch spriteBatch)
+        {
+            foreach (xTile.Layers.Layer layer in Game1.currentLocation.map.Layers)
+            {
+                for (int x = 0; x < layer.LayerWidth; x++)
+                {
+                    for (int y = 0; y < layer.LayerHeight; y++)
+                    {
+                        if (layer.Tiles[x, y] is not null)
+                        {
+                            CheckTile(x, y, spriteBatch);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CheckTile(int x, int y, SpriteBatch spriteBatch)
+        {
+            if (
+                config.HighlightHoeableTile
+                && Game1.currentLocation.doesTileHaveProperty(x, y, "Diggable", "Back") is not null
+                && !DoesTileHaveCrop(x, y)
+            )
+            {
+                HighlightTile(x, y, spriteBatch);
+            }
+
+        }
+
+        private bool DoesTileHaveCrop(int x, int y)
+        {
+            Vector2 tile = new Vector2(x, y);
+            return (
+                Game1.currentLocation.terrainFeatures.TryGetValue(tile, out var terrainFeature)
+                && terrainFeature is HoeDirt hoeDirt
+                && hoeDirt.crop is not null
+            );
         }
 
         private void HighlightTile(int x, int y, SpriteBatch spriteBatch)
@@ -263,12 +343,23 @@ namespace VisibleArtifactSpots
         {
             Vector2 objPos = Game1.GlobalToLocal(Game1.viewport, new Vector2(x * 64, y * 64));
             Vector2 pos = objPos - new Vector2(0, 32); // 1 tile above where the object is
-            Rectangle destinationRectangle = new Rectangle((int)pos.X, (int)pos.Y - 32, 64, 64);
+            Microsoft.Xna.Framework.Rectangle destinationRectangle = new Microsoft.Xna.Framework.Rectangle(
+                (int)pos.X,
+                (int)pos.Y - 32,
+                64,
+                64
+            );
+            Microsoft.Xna.Framework.Rectangle sourceRectangle = new Microsoft.Xna.Framework.Rectangle(
+                16 * 16 % Game1.emoteSpriteSheet.Width,
+                16 * 16 / Game1.emoteSpriteSheet.Width * 16,
+                16,
+                16
+            );
 
             spriteBatch.Draw(
                 Game1.emoteSpriteSheet,
                 destinationRectangle,
-                new Rectangle(16 * 16 % Game1.emoteSpriteSheet.Width, 16 * 16 / Game1.emoteSpriteSheet.Width * 16, 16, 16),
+                sourceRectangle,
                 Color.White * 0.95f, 0.0f,
                 Vector2.Zero,
                 SpriteEffects.None,
