@@ -21,6 +21,7 @@ You can use the same hotkey in other contexts as well, affecting the 9 tiles aro
 - Fruit or vegetables in the first inventory slot will automatically be planted in any [Kegs](https://stardewvalleywiki.com/Keg).
 - Ore in the first inventory slot will automatically be planted in any [Furnaces](https://stardewvalleywiki.com/Furnace).
 - [Bait](https://stardewvalleywiki.com/Bait) in the first inventory slot will automatically be planted in any [Crab Pots](https://stardewvalleywiki.com/Crab_Pot).
+- Doors will automatically be clicked on.
 - Mines:
   - The elevator will automatically be clicked on.
   - Ladders down will automatically be clicked on.

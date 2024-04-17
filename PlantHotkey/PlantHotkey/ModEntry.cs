@@ -83,7 +83,7 @@ namespace PlantHotkey
 
         private void SearchSurroundingTiles()
         {
-            if (usedLadderOnThisFloor)
+            if (usedLadderOnThisFloor || Game1.player.mount is Horse)
             {
                 return;
             }
@@ -221,7 +221,7 @@ namespace PlantHotkey
                     }
 
                     // Auto-forage
-                    if (obj.CanBeGrabbed && obj.Name != "Anvil" && obj.Name != "Mini-Forge")
+                    if (obj.CanBeGrabbed && obj.Name != "Anvil" && obj.Name != "Mini-Forge" && obj.Name != "Mini-Obelisk")
                     {
                         // "obj.performUseAction" does nothing for foragable items.
                         bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
@@ -250,7 +250,7 @@ namespace PlantHotkey
                             }
                         }
 
-                        if (tile.X == 12 && tile.Y == 10 && Game1.player.mount is not Horse) // The mine cart tile to the left of the entrance.
+                        if (tile.X == 12 && tile.Y == 10) // The mine cart tile to the left of the entrance.
                         {
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
@@ -288,7 +288,7 @@ namespace PlantHotkey
                         break;
 
                     case "Town":
-                        if (tile.X == 105 && tile.Y == 79 && Game1.player.mount is not Horse) // The mine cart tile next to the blacksmith.
+                        if (tile.X == 105 && tile.Y == 79) // The mine cart tile next to the blacksmith.
                         {
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
@@ -300,7 +300,7 @@ namespace PlantHotkey
                         break;
 
                     case "BusStop":
-                        if (tile.X == 14 && tile.Y == 3 && Game1.player.mount is not Horse) // The mine cart tile for the bus stop.
+                        if (tile.X == 14 && tile.Y == 3) // The mine cart tile for the bus stop.
                         {
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
@@ -312,7 +312,7 @@ namespace PlantHotkey
                         break;
 
                     case "Mountain":
-                        if (tile.X == 124 && tile.Y == 11 && Game1.player.mount is not Horse) // The mine cart tile for quarry.
+                        if (tile.X == 124 && tile.Y == 11) // The mine cart tile for quarry.
                         {
                             // Intentionally disabled for the mountain because it interferes with gathering Oak Resin.
                             /*
