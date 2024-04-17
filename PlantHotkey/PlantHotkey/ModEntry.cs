@@ -3,6 +3,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.GameData.Crops;
 using StardewValley.Locations;
@@ -28,7 +29,7 @@ namespace PlantHotkey
 
         // Variables
         private ModConfig config = new();
-        bool usedLadderOnThisFloor = false;
+        bool warpingInThisLocation = false;
 
         public override void Entry(IModHelper helper)
         {
@@ -83,7 +84,7 @@ namespace PlantHotkey
 
         private void SearchSurroundingTiles()
         {
-            if (usedLadderOnThisFloor || Game1.player.mount is Horse)
+            if (warpingInThisLocation || Game1.player.mount is Horse)
             {
                 return;
             }
@@ -165,10 +166,26 @@ namespace PlantHotkey
                     }
                 }
 
+                // Doors
+                foreach (Building building in location.buildings)
+                {
+                    if (building.isActionableTile((int)tile.X, (int)tile.Y, Game1.player))
+                    {
+                        bool success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                        if (success)
+                        {
+                            warpingInThisLocation = true;
+                            return;
+                        }
+                    }
+                }
+
                 // Objects
                 StardewValley.Object obj = location.getObjectAtTile((int)tile.X, (int)tile.Y);
                 if (obj is not null)
                 {
+                    Log(obj.Name);
+
                     // Auto empty nearby objects (e.g. Crystalariums)
                     if (obj.readyForHarvest.Value)
                     {
@@ -224,7 +241,7 @@ namespace PlantHotkey
                     if (obj.CanBeGrabbed && obj.Name != "Anvil" && obj.Name != "Mini-Forge" && obj.Name != "Mini-Obelisk")
                     {
                         // "obj.performUseAction" does nothing for foragable items.
-                        bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
+                        bool success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
                         if (success)
                         {
                             return;
@@ -245,7 +262,7 @@ namespace PlantHotkey
                             bool success = location.performAction("MineElevator", Game1.player, tileLocation);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -255,7 +272,7 @@ namespace PlantHotkey
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -269,7 +286,7 @@ namespace PlantHotkey
                             bool success = location.performAction("SkullDoor", Game1.player, tileLocation);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -278,10 +295,10 @@ namespace PlantHotkey
                     case "Sewer":
                         if (tile.X == 16 && tile.Y == 10) // The ladder tile to the left of Krobus.
                         {
-                            bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
+                            bool success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -293,7 +310,7 @@ namespace PlantHotkey
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -305,7 +322,7 @@ namespace PlantHotkey
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 return;
                             }
                         }
@@ -341,7 +358,7 @@ namespace PlantHotkey
                                 success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
                                 if (success)
                                 {
-                                    usedLadderOnThisFloor = true;
+                                    warpingInThisLocation = true;
                                     return;
                                 }
                                 break;
@@ -349,7 +366,7 @@ namespace PlantHotkey
                                 // We only want to automatically go up ladders when farming ore in the mines (and not in Skull Cavern).
                                 if (!IsSkullCavern(location.Name))
                                 {
-                                    usedLadderOnThisFloor = true;
+                                    warpingInThisLocation = true;
                                     location.answerDialogueAction("ExitMine_Leave", Array.Empty<string>()); // We want to skip the annoying dialog.
                                     return;
                                 }
@@ -359,13 +376,13 @@ namespace PlantHotkey
                                 success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
                                 if (success)
                                 {
-                                    usedLadderOnThisFloor = true;
+                                    warpingInThisLocation = true;
                                     return;
                                 }
                                 break;
 
                             case (int)TileType.Shaft:
-                                usedLadderOnThisFloor = true;
+                                warpingInThisLocation = true;
                                 mineShaft.enterMineShaft(); // We want to skip the annoying dialog.
                                 return;
 
@@ -442,7 +459,7 @@ namespace PlantHotkey
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
-            usedLadderOnThisFloor = false;
+            warpingInThisLocation = false;
         }
 
         private void Log(string msg)
