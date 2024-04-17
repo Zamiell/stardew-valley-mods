@@ -5,8 +5,6 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using xTile.Dimensions;
-using xTile.Tiles;
 
 namespace VisibleArtifactSpots
 {
@@ -343,13 +341,13 @@ namespace VisibleArtifactSpots
         {
             Vector2 objPos = Game1.GlobalToLocal(Game1.viewport, new Vector2(x * 64, y * 64));
             Vector2 pos = objPos - new Vector2(0, 32); // 1 tile above where the object is
-            Microsoft.Xna.Framework.Rectangle destinationRectangle = new Microsoft.Xna.Framework.Rectangle(
+            Rectangle destinationRectangle = new Rectangle(
                 (int)pos.X,
                 (int)pos.Y - 32,
                 64,
                 64
             );
-            Microsoft.Xna.Framework.Rectangle sourceRectangle = new Microsoft.Xna.Framework.Rectangle(
+            Rectangle sourceRectangle = new Rectangle(
                 16 * 16 % Game1.emoteSpriteSheet.Width,
                 16 * 16 / Game1.emoteSpriteSheet.Width * 16,
                 16,
