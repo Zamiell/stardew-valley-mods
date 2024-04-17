@@ -23,6 +23,7 @@ namespace Notifier
         /// From "Mineshaft.cs"
         enum TileType
         {
+            Elevator = 112,
             LadderUp = 115,
             LadderDown = 173,
             Shaft = 174,

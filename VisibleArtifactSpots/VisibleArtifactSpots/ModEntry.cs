@@ -97,6 +97,14 @@ namespace VisibleArtifactSpots
 
             configMenu.AddBoolOption(
                 this.ModManifest,
+                () => config.HighlightRadioactiveNodes,
+                (bool val) => config.HighlightRadioactiveNodes = val,
+                () => "Radioactive Nodes",
+                () => "Whether to highlight radioactive nodes."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
                 () => config.HighlightCinderNodes,
                 (bool val) => config.HighlightCinderNodes = val,
                 () => "Cinder Nodes",
@@ -171,6 +179,7 @@ namespace VisibleArtifactSpots
                 || (obj.Name == "Stone" && description.Contains("iron") && config.HighlightIronNodes)
                 || (obj.Name == "Stone" && description.Contains("gold") && config.HighlightGoldNodes)
                 || (obj.Name == "Stone" && description.Contains("iridium") && config.HighlightIridiumNodes)
+                || (obj.Name == "Stone" && description.Contains("radioactive") && config.HighlightRadioactiveNodes)
                 || (obj.Name == "Stone" && description.Contains("cinder") && config.HighlightCinderNodes)
                 || (obj is Chest chest && !chest.playerChest.Value && !IsChestOpened(chest) && InVolcanoDungeon() && config.HighlightChests)
             );

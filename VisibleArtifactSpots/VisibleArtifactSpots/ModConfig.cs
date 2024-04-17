@@ -11,6 +11,7 @@ namespace VisibleArtifactSpots
         public bool HighlightIronNodes { get; set; } = false;
         public bool HighlightGoldNodes { get; set; } = false;
         public bool HighlightIridiumNodes { get; set; } = false;
+        public bool HighlightRadioactiveNodes { get; set; } = false;
         public bool HighlightCinderNodes { get; set; } = false;
         public bool HighlightChests { get; set; } = false;
         public bool HighlightNonPlanted { get; set; } = false;

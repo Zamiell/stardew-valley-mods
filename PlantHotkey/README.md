@@ -31,3 +31,5 @@ You can use the same hotkey in other contexts as well, affecting the 9 tiles aro
   - Shafts will automatically be clicked on. (The dialog is also removed.)
 - Sewer:
   - The exit ladder will automatically be clicked on.
+- Town:
+  - The mine cart will automatically be clicked on.

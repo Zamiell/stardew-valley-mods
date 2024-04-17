@@ -3,6 +3,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Characters;
 using StardewValley.GameData.Crops;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -18,6 +19,7 @@ namespace PlantHotkey
         /// From "Mineshaft.cs"
         enum TileType
         {
+            Elevator = 112,
             LadderUp = 115,
             LadderDown = 173,
             Shaft = 174,
@@ -167,7 +169,7 @@ namespace PlantHotkey
                 StardewValley.Object obj = location.getObjectAtTile((int)tile.X, (int)tile.Y);
                 if (obj is not null)
                 {
-                    // Auto empty nearby objects
+                    // Auto empty nearby objects (e.g. Crystalariums)
                     if (obj.readyForHarvest.Value)
                     {
                         bool success = obj.checkForAction(Game1.player);
@@ -237,22 +239,23 @@ namespace PlantHotkey
                     case "Mine":
                         // This is the tile that the elevator is located at. You can also right-click on the tile below the elevator in order to bring up the menu,
                         // but this also involves a distance check. By checking for the elevator tile, the mod correctly emulates the vanilla behavior.
+                        // (The below elevator code will not apply on the first floor of the mines because it does not count as a `MineShaft`.)
                         if (tile.X == 17 && tile.Y == 3)
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = location.performAction("MineElevator", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
 
-                        if (tile.X == 12 && tile.Y == 10) // The mine cart tile to the left of the entrance.
+                        if (tile.X == 12 && tile.Y == 10 && Game1.player.mount is not Horse) // The mine cart tile to the left of the entrance.
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
@@ -263,10 +266,10 @@ namespace PlantHotkey
                     case "SkullCave":
                         if (tile.X == 3 && tile.Y == 4)
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = location.performAction("SkullDoor", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
@@ -275,48 +278,51 @@ namespace PlantHotkey
                     case "Sewer":
                         if (tile.X == 16 && tile.Y == 10) // The ladder tile to the left of Krobus.
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = Game1.currentLocation.checkAction(tileLocation, Game1.viewport, Game1.player);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
                         break;
 
                     case "Town":
-                        if (tile.X == 105 && tile.Y == 79) // The mine cart tile next to the blacksmith.
+                        if (tile.X == 105 && tile.Y == 79 && Game1.player.mount is not Horse) // The mine cart tile next to the blacksmith.
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
                         break;
 
                     case "BusStop":
-                        if (tile.X == 14 && tile.Y == 3) // The mine cart tile for the bus stop.
+                        if (tile.X == 14 && tile.Y == 3 && Game1.player.mount is not Horse) // The mine cart tile for the bus stop.
                         {
-                            usedLadderOnThisFloor = true;
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
                         }
                         break;
 
                     case "Mountain":
-                        if (tile.X == 124 && tile.Y == 11) // The mine cart tile for quarry.
+                        if (tile.X == 124 && tile.Y == 11 && Game1.player.mount is not Horse) // The mine cart tile for quarry.
                         {
-                            usedLadderOnThisFloor = true;
+                            // Intentionally disabled for the mountain because it interferes with gathering Oak Resin.
+                            /*
                             bool success = location.performAction("MinecartTransport", Game1.player, tileLocation);
                             if (success)
                             {
+                                usedLadderOnThisFloor = true;
                                 return;
                             }
+                            */
                         }
                         break;
                 }
@@ -324,12 +330,21 @@ namespace PlantHotkey
                 // Mine shaft things
                 if (location is MineShaft mineShaft)
                 {
+                    bool success = false;
+
                     int index = location.getTileIndexAt(new Point((int)tile.X, (int)tile.Y), "Buildings");
                     if (!location.Objects.ContainsKey(tile) && !location.terrainFeatures.ContainsKey(tile))
                     {
-                        bool success = false;
                         switch (index)
                         {
+                            case (int)TileType.Elevator:
+                                success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
+                                if (success)
+                                {
+                                    usedLadderOnThisFloor = true;
+                                    return;
+                                }
+                                break;
                             case (int)TileType.LadderUp:
                                 // We only want to automatically go up ladders when farming ore in the mines (and not in Skull Cavern).
                                 if (!IsSkullCavern(location.Name))
@@ -339,11 +354,15 @@ namespace PlantHotkey
                                     return;
                                 }
                                 break;
-                            
+
                             case (int)TileType.LadderDown:
-                                usedLadderOnThisFloor = true;
                                 success = location.checkAction(tileLocation, Game1.viewport, Game1.player);
-                                return;
+                                if (success)
+                                {
+                                    usedLadderOnThisFloor = true;
+                                    return;
+                                }
+                                break;
 
                             case (int)TileType.Shaft:
                                 usedLadderOnThisFloor = true;
