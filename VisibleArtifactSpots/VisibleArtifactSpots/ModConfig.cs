@@ -7,6 +7,7 @@ namespace VisibleArtifactSpots
         public string HighlightType { get; set; } = "Border";
         public bool HighlightArtifactSpots { get; set; } = true;
         public bool HighlightSeedSpots { get; set; } = true;
+        public bool HighlightWeeds { get; set; } = false;
         public bool HighlightTwigs { get; set; } = false;
         public bool HighlightStones { get; set; } = false;
         public bool HighlightCopperNodes { get; set; } = false;

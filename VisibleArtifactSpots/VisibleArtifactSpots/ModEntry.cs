@@ -62,6 +62,14 @@ namespace VisibleArtifactSpots
 
             configMenu.AddBoolOption(
                 this.ModManifest,
+                () => config.HighlightWeeds,
+                (bool val) => config.HighlightWeeds = val,
+                () => "Weeds",
+                () => "Whether to highlight weeds."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
                 () => config.HighlightTwigs,
                 (bool val) => config.HighlightTwigs = val,
                 () => "Twigs",
@@ -200,6 +208,7 @@ namespace VisibleArtifactSpots
             return (
                 (obj.Name == "Artifact Spot" && config.HighlightArtifactSpots)
                 || (obj.Name == "Seed Spot" && config.HighlightSeedSpots)
+                || (obj.Name == "Weeds" && config.HighlightWeeds && !InDungeon())
                 || (obj.Name == "Twig" && config.HighlightTwigs && !InDungeon())
                 || (obj.Name == "Stone" && config.HighlightStones && !InDungeon())
                 || (obj.Name == "Stone" && description.Contains("copper") && config.HighlightCopperNodes)
@@ -267,6 +276,11 @@ namespace VisibleArtifactSpots
 
         private void CheckLocationTiles(SpriteBatch spriteBatch)
         {
+            if (Game1.currentLocation.Name != "Farm" && Game1.currentLocation.Name != "IslandWest")
+            {
+                return;
+            }
+
             foreach (xTile.Layers.Layer layer in Game1.currentLocation.map.Layers)
             {
                 for (int x = 0; x < layer.LayerWidth; x++)
@@ -284,22 +298,25 @@ namespace VisibleArtifactSpots
 
         private void CheckTile(int x, int y, SpriteBatch spriteBatch)
         {
+            Vector2 tileLocation = new Vector2(x, y);
+
             if (
                 config.HighlightHoeableTile
                 && Game1.currentLocation.doesTileHaveProperty(x, y, "Diggable", "Back") is not null
-                && !DoesTileHaveCrop(x, y)
+                && Game1.currentLocation.CanPlantSeedsHere("(O)885", x, y, false, out string errorMessage) // "(O)885" is Fiber Seeds, which are plantable in all seasons.
+                && Game1.currentLocation.isTilePassable(tileLocation)
+                && !Game1.currentLocation.IsTileBlockedBy(tileLocation, ignorePassables: CollisionMask.All)
+                && !DoesTileHaveCrop(tileLocation)
             )
             {
                 HighlightTile(x, y, spriteBatch);
             }
-
         }
 
-        private bool DoesTileHaveCrop(int x, int y)
+        private bool DoesTileHaveCrop(Vector2 tileLocation)
         {
-            Vector2 tile = new Vector2(x, y);
             return (
-                Game1.currentLocation.terrainFeatures.TryGetValue(tile, out var terrainFeature)
+                Game1.currentLocation.terrainFeatures.TryGetValue(tileLocation, out var terrainFeature)
                 && terrainFeature is HoeDirt hoeDirt
                 && hoeDirt.crop is not null
             );
