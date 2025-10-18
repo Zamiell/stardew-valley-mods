@@ -19,6 +19,12 @@ namespace VisibleArtifactSpots
         /// <remarks>Each mod can only be registered once, unless it's deleted via <see cref="Unregister"/> before calling this again.</remarks>
         void Register(IManifest mod, Action reset, Action save, bool titleScreenOnly = false);
 
+        /// <summary>Add a section title at the current position in the form.</summary>
+        /// <param name="mod">The mod's manifest.</param>
+        /// <param name="text">The title text shown in the form.</param>
+        /// <param name="tooltip">The tooltip text shown when the cursor hovers on the title, or <c>null</c> to disable the tooltip.</param>
+        void AddSectionTitle(IManifest mod, Func<string> text, Func<string> tooltip = null);
+
         /// <summary>Add a boolean option at the current position in the form.</summary>
         /// <param name="mod">The mod's manifest.</param>
         /// <param name="getValue">Get the current value from the mod config.</param>

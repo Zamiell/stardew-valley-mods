@@ -35,6 +35,12 @@ namespace VisibleArtifactSpots
                 save: () => this.Helper.WriteConfig(config)
             );
 
+            configMenu.AddSectionTitle(
+                this.ModManifest,
+                () => "Highlighting Configs",
+                () => "Highlighting configuration options for Visible Artifact Spots."
+            );
+
             configMenu.AddTextOption(
                 this.ModManifest,
                 () => config.HighlightType,
@@ -42,6 +48,12 @@ namespace VisibleArtifactSpots
                 () => "Highlight type",
                 () => "The way to highlight things.",
                 new string[] { "Border", "Bubble", "Both" }
+            );
+
+            configMenu.AddSectionTitle(
+                this.ModManifest,
+                () => "Digspot Options",
+                () => "Options for digspots."
             );
 
             configMenu.AddBoolOption(
@@ -58,6 +70,12 @@ namespace VisibleArtifactSpots
                 (bool val) => config.HighlightSeedSpots = val,
                 () => "Seed Spots",
                 () => "Whether to highlight seed spots."
+            );
+
+            configMenu.AddSectionTitle(
+                this.ModManifest,
+                () => "Debris Options",
+                () => "Options for debris (weeds, twigs, stones)."
             );
 
             configMenu.AddBoolOption(
@@ -82,6 +100,12 @@ namespace VisibleArtifactSpots
                 (bool val) => config.HighlightStones = val,
                 () => "Stones",
                 () => "Whether to highlight stones."
+            );
+
+            configMenu.AddSectionTitle(
+                this.ModManifest,
+                () => "Ore Node Options",
+                () => "Options for ore nodes (copper, iron, gold, iridium, radioactive, cinder)."
             );
 
             configMenu.AddBoolOption(
@@ -132,28 +156,26 @@ namespace VisibleArtifactSpots
                 () => "Whether to highlight cinder nodes."
             );
 
-            configMenu.AddBoolOption(
+            configMenu.AddSectionTitle(
                 this.ModManifest,
-                () => config.HighlightChests,
-                (bool val) => config.HighlightChests = val,
-                () => "Chests (in Volcano Dungeon)",
-                () => "Whether to highlight chests in the Volcano Dungeon."
+                () => "Farming Options",
+                () => "Options for farming-related tiles."
             );
 
             configMenu.AddBoolOption(
                 this.ModManifest,
                 () => config.HighlightNonPlanted,
                 (bool val) => config.HighlightNonPlanted = val,
-                () => "Non-Planted Crops",
-                () => "Whether to highlight tiles with no crops planted."
+                () => "Non-Planted Tilled Tile",
+                () => "Whether to highlight tilled tiles with no crops planted."
             );
 
             configMenu.AddBoolOption(
                 this.ModManifest,
                 () => config.HighlightNonWatered,
                 (bool val) => config.HighlightNonWatered = val,
-                () => "Non-Watered Tiles",
-                () => "Whether to highlight tiles that are not watered."
+                () => "Non-Watered Crops",
+                () => "Whether to highlight tiles that are not watered with crops planted."
             );
 
             configMenu.AddBoolOption(
@@ -161,7 +183,7 @@ namespace VisibleArtifactSpots
                 () => config.HighlightNonFertilized,
                 (bool val) => config.HighlightNonFertilized = val,
                 () => "Non-Fertilized Crops",
-                () => "Whether to highlight tiles that are not fertilized."
+                () => "Whether to highlight tiles that are not fertilized with crops planted."
             );
 
             configMenu.AddBoolOption(
@@ -170,6 +192,28 @@ namespace VisibleArtifactSpots
                 (bool val) => config.HighlightHoeableTile = val,
                 () => "Hoeable Tile",
                 () => "Whether to highlight tiles that are hoeable and are not hoed."
+            );
+
+            configMenu.AddSectionTitle(
+                this.ModManifest,
+                () => "Other Options",
+                () => "Other miscellaneous options."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightForageable,
+                (bool val) => config.HighlightForageable = val,
+                () => "Forageable",
+                () => "Whether to highlight forageable items."
+            );
+
+            configMenu.AddBoolOption(
+                this.ModManifest,
+                () => config.HighlightChests,
+                (bool val) => config.HighlightChests = val,
+                () => "Chests (in Volcano Dungeon)",
+                () => "Whether to highlight chests in the Volcano Dungeon."
             );
         }
 
@@ -217,6 +261,7 @@ namespace VisibleArtifactSpots
                 || (obj.Name == "Stone" && description.Contains("iridium") && config.HighlightIridiumNodes)
                 || (obj.Name == "Stone" && description.Contains("radioactive") && config.HighlightRadioactiveNodes)
                 || (obj.Name == "Stone" && description.Contains("cinder") && config.HighlightCinderNodes)
+                || (obj.IsSpawnedObject == true && config.HighlightForageable)
                 || (obj is Chest chest && !chest.playerChest.Value && !IsChestOpened(chest) && InVolcanoDungeon() && config.HighlightChests)
             );
         }
@@ -264,10 +309,13 @@ namespace VisibleArtifactSpots
         {
             if (terrainFeature is HoeDirt hoeDirt)
             {
+                // Highlight if: (1) no crop is planted and config.HighlightNonPlanted is true
+                // OR (2) a crop is planted but not watered and config.HighlightNonWatered is true
+                // OR (3) a crop is planted but not fertilized and config.HighlightNonFertilized is true
                 return (
                     (hoeDirt.crop is null && config.HighlightNonPlanted)
-                    || (!hoeDirt.isWatered() && config.HighlightNonWatered)
-                    || (hoeDirt.fertilizer.Value is null && config.HighlightNonFertilized)
+                    || (hoeDirt.crop is not null && !hoeDirt.isWatered() && config.HighlightNonWatered)
+                    || (hoeDirt.crop is not null && hoeDirt.fertilizer.Value is null && config.HighlightNonFertilized)
                 );
             }
 

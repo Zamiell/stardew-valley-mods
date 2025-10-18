@@ -21,5 +21,6 @@ namespace VisibleArtifactSpots
         public bool HighlightNonWatered { get; set; } = false;
         public bool HighlightNonFertilized { get; set; } = false;
         public bool HighlightHoeableTile { get; set; } = false;
+        public bool HighlightForageable { get; set; } = false;
     }
 }
